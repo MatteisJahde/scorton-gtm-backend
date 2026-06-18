@@ -269,9 +269,11 @@ def _lead_intent(lead: dict) -> str:
 
 def _lead_summary_row(lead: dict) -> dict:
     score = _lead_score(lead)
+    company_name = str(lead.get("company_name") or lead.get("company") or "").strip()
     return {
         "id": lead.get("id"),
-        "company": lead.get("company_name") or lead.get("company"),
+        "company_name": company_name,
+        "company": company_name,
         "company_website": lead.get("company_website") or lead.get("website"),
         "industry": lead.get("industry"),
         "city": lead.get("city"),
@@ -285,11 +287,13 @@ def _lead_summary_row(lead: dict) -> dict:
 
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
     """Build dashboard summary: counts plus top high-intent leads by score."""
-    total_leads = len(leads)
     if not leads:
         return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
 
     df = pd.DataFrame([_lead_summary_row(lead) for lead in leads])
+    df = df.drop_duplicates(subset=["company_name"], keep="first")
+    total_leads = len(df)
+
     high_intent_df = df[df["intent"] == HIGH_INTENT_VALUE].copy()
     high_intent_df = high_intent_df.sort_values(
         LEADS_SUMMARY_SCORE_FIELD,
