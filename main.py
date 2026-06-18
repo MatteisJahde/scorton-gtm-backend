@@ -50,6 +50,9 @@ api_router = APIRouter(prefix="/api")
 
 QUALIFIED_BATCH_SIZE = 100
 HIGH_INTENT_SCORE_THRESHOLD = 80
+HIGH_INTENT_VALUE = "high"
+TOP_LEADS_LIMIT = 100
+LEADS_SUMMARY_SCORE_FIELD = "company_ai_signal"
 CYBERSECURITY_LEADS_PATH = (
     Path(__file__).resolve().parent / "data" / "target_dataset_1000_companies.csv"
 )
@@ -252,7 +255,42 @@ def _filter_high_intent_leads(leads: list[dict]) -> list[dict]:
 
 def _is_high_intent_lead(lead: dict) -> bool:
     """High intent when resolved lead score meets the configured threshold."""
+    if str(lead.get("intent", "")).strip().lower() == HIGH_INTENT_VALUE:
+        return True
     return _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD
+
+
+def _lead_intent(lead: dict) -> str:
+    if str(lead.get("intent", "")).strip().lower() == HIGH_INTENT_VALUE:
+        return HIGH_INTENT_VALUE
+    return HIGH_INTENT_VALUE if _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD else "low"
+
+
+def _lead_summary_row(lead: dict) -> dict:
+    score = _lead_score(lead)
+    return {
+        "id": lead.get("id"),
+        "company": lead.get("company_name") or lead.get("company"),
+        "company_website": lead.get("company_website") or lead.get("website"),
+        "industry": lead.get("industry"),
+        "city": lead.get("city"),
+        "intent": _lead_intent(lead),
+        LEADS_SUMMARY_SCORE_FIELD: score,
+        "buyer_name": lead.get("buyer_name"),
+        "job_title": lead.get("job_title"),
+        "work_email": lead.get("work_email"),
+    }
+
+
+def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
+    """Build dashboard summary: counts plus top high-intent leads by score."""
+    high_intent_leads = [lead for lead in leads if _lead_intent(lead) == HIGH_INTENT_VALUE]
+    high_intent_leads.sort(key=_lead_score, reverse=True)
+    return {
+        "total_leads": len(leads),
+        "high_intent_leads": len(high_intent_leads),
+        "top_leads": [_lead_summary_row(lead) for lead in high_intent_leads[:top_n]],
+    }
 
 
 def calculate_dashboard_metrics(leads: list[dict]) -> dict:
@@ -332,8 +370,8 @@ def api_dashboard_metrics(db: Session = Depends(get_db)):
 
 @app.get("/api/leads-summary")
 def leads_summary(db: Session = Depends(get_db)):
-    """Dashboard counts: all leads vs high-intent (score >= 80)."""
-    return calculate_dashboard_metrics(get_all_leads(db))
+    """Dashboard summary: counts and top 100 high-intent leads by score."""
+    return build_leads_summary(get_all_leads(db))
 
 
 @api_router.get("/qualified-companies")
