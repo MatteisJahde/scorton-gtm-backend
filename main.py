@@ -33,6 +33,7 @@ from dataset_builder import (
     export_target_dataset_xlsx,
     target_account_to_dict,
 )
+from deduplication import deduplicate_company_records
 from ingestion import ingest_companies
 from models import Company, Contact, TargetAccount
 from services.weekly_batch import pull_weekly_batch
@@ -289,36 +290,13 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def _dedupe_raw_leads_by_company(leads: list[dict]) -> list[dict]:
-    """Remove duplicate companies from loaded lead records using the company column."""
-    if not leads:
-        return []
-
-    df = pd.DataFrame(leads)
-    if "company" not in df.columns:
-        df["company"] = ""
-    if "company_name" in df.columns:
-        df["company"] = df["company"].where(
-            df["company"].astype(str).str.strip() != "",
-            df["company_name"].astype(str).str.strip(),
-        )
-    df["company"] = df["company"].fillna("").astype(str).str.strip()
-    df = df.drop_duplicates(subset=["company"], keep="first")
-    return df.to_dict(orient="records")
-
-
-def _dedupe_leads_by_company(leads: list[dict]) -> list[dict]:
-    """Remove duplicate companies immediately after loading lead data."""
-    return _dedupe_raw_leads_by_company(leads)
-
-
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
     """Build dashboard summary: counts plus top high-intent leads by score."""
     if not leads:
         return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
 
-    df = _leads_to_dataframe(leads)
-    df = df.drop_duplicates(subset=["company"], keep="first")
+    unique_leads, _report = deduplicate_company_records(leads, label="leads_summary")
+    df = _leads_to_dataframe(unique_leads)
     total_leads = len(df)
 
     high_intent_df = df[df["intent"] == HIGH_INTENT_VALUE].copy()
@@ -345,31 +323,32 @@ def calculate_dashboard_metrics(leads: list[dict]) -> dict:
     }
 
 
+def _load_leads_from_db(db: Session) -> list[dict]:
+    rows = (
+        db.query(TargetAccount)
+        .order_by(
+            TargetAccount.trust_opportunity_score.desc(),
+            TargetAccount.icp_score.desc(),
+            TargetAccount.id,
+        )
+        .all()
+    )
+    return sort_companies_for_final_cut(
+        [target_account_to_dict(account) for account in rows]
+    )
+
+
 def get_all_leads(db: Session) -> list[dict]:
     """Load all leads from TargetAccount or the master CSV (no intent filter)."""
     try:
-        rows = (
-            db.query(TargetAccount)
-            .order_by(
-                TargetAccount.trust_opportunity_score.desc(),
-                TargetAccount.icp_score.desc(),
-                TargetAccount.id,
-            )
-            .all()
-        )
-
-        if rows:
-            leads = sort_companies_for_final_cut(
-                [target_account_to_dict(account) for account in rows]
-            )
-            return _dedupe_raw_leads_by_company(leads)
-
-        if CYBERSECURITY_LEADS_PATH.exists():
+        if db.query(TargetAccount.id).first():
+            leads = _load_leads_from_db(db)
+        elif CYBERSECURITY_LEADS_PATH.exists():
             with CYBERSECURITY_LEADS_PATH.open(encoding="utf-8") as leads_file:
-                all_leads = [
+                leads = [
                     expand_standard_csv_row(row) for row in csv.DictReader(leads_file)
                 ]
-            all_leads.sort(
+            leads.sort(
                 key=lambda lead: float(
                     lead.get("trust_opportunity_score")
                     or lead.get("company_ai_signal")
@@ -378,14 +357,29 @@ def get_all_leads(db: Session) -> list[dict]:
                 ),
                 reverse=True,
             )
-            return _dedupe_raw_leads_by_company(all_leads)
+        else:
+            leads = []
+
+        unique_leads, _report = deduplicate_company_records(leads, label="api_leads")
+        return unique_leads
     except Exception as exc:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to load leads: {exc}",
         ) from exc
 
-    return []
+
+def get_unique_target_dataset(
+    db: Session,
+    *,
+    limit: Optional[int] = None,
+    offset: int = 0,
+) -> list[dict]:
+    leads = _load_leads_from_db(db)
+    unique_leads, _report = deduplicate_company_records(leads, label="target_dataset")
+    if limit is None:
+        return unique_leads[offset:]
+    return unique_leads[offset : offset + limit]
 
 
 def get_qualified_companies(db: Session) -> list[dict]:
@@ -427,20 +421,19 @@ def api_qualified_companies(db: Session = Depends(get_db)):
     )
 
 
+@api_router.get("/qualified-accounts")
+def api_qualified_accounts(db: Session = Depends(get_db)):
+    return api_qualified_companies(db)
+
+
 @api_router.get("/target-dataset")
 def api_target_dataset(
     limit: Optional[int] = None,
     offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    query = db.query(TargetAccount).order_by(TargetAccount.id).offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
-    rows = query.all()
-    leads = _filter_high_intent_leads(
-        [target_account_to_dict(account) for account in rows]
-    )
-    return json_success(leads)
+    leads = get_unique_target_dataset(db, limit=limit, offset=offset)
+    return json_success(_filter_high_intent_leads(leads))
 
 
 @api_router.get("/contacts")
@@ -464,6 +457,11 @@ def pull_weekly_batch_endpoint(current_week: int, db: Session = Depends(get_db))
 def qualified_companies(db: Session = Depends(get_db)):
     all_qualified_companies = get_qualified_companies(db)
     return all_qualified_companies
+
+
+@app.get("/qualified-accounts")
+def qualified_accounts(db: Session = Depends(get_db)):
+    return qualified_companies(db)
 
 
 @app.get("/contacts")
@@ -518,13 +516,8 @@ def target_dataset(
     offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    query = db.query(TargetAccount).order_by(TargetAccount.id).offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
-    rows = query.all()
-    return _filter_high_intent_leads(
-        [target_account_to_dict(account) for account in rows]
-    )
+    leads = get_unique_target_dataset(db, limit=limit, offset=offset)
+    return _filter_high_intent_leads(leads)
 
 
 EXPORT_CSV_PATH = Path(__file__).resolve().parent / "data" / "export-target-dataset.csv"

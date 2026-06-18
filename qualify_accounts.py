@@ -16,6 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 from dataset_builder import expand_standard_csv_row
+from deduplication import deduplicate_company_records
 from sorting_agent import qualification_score_with_city, sort_companies_for_final_cut
 
 ROOT = Path(__file__).resolve().parent
@@ -84,7 +85,13 @@ def main() -> None:
         axis=1,
     )
 
-    qualified = sort_companies_for_final_cut(df.to_dict(orient="records"))[:TOP_N]
+    deduped_records, dedupe_report = deduplicate_company_records(
+        df.to_dict(orient="records"),
+        score_fields=("qualification_score",),
+        label="qualified_accounts",
+    )
+
+    qualified = sort_companies_for_final_cut(deduped_records)[:TOP_N]
     qualified = pd.DataFrame(qualified).reset_index(drop=True)
 
     qualified["priority_tier"] = qualified["qualification_score"].apply(assign_priority_tier)
@@ -100,7 +107,9 @@ def main() -> None:
         f"SUCCESS: Read {len(df)} rows from data/target_dataset_1000_companies.csv "
         f"and wrote {len(qualified)} rows to data/top_250_qualified_accounts.csv"
     )
-    print(f"Total input companies: {len(df)}")
+    print(f"Total input companies: {dedupe_report.input_count}")
+    print(f"Duplicates removed: {dedupe_report.duplicates_removed}")
+    print(f"Final unique companies: {dedupe_report.final_count}")
     print(f"Total qualified companies: {len(qualified)}")
     print(f"Average qualification score: {qualified['qualification_score'].mean():.2f}")
 

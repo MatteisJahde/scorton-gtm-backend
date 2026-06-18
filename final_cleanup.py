@@ -14,11 +14,10 @@ from dataset_builder import (
     is_placeholder_company,
     rows_for_reference_csv,
 )
+from deduplication import deduplicate_company_records
 from sorting_agent import qualification_score_with_city
 
-DATASET_PATH = Path(
-    "/Users/matteisjahde/Projects/scorton-gtm-os/data/target_dataset_1000_companies.csv"
-)
+DATASET_PATH = Path(__file__).resolve().parent / "data" / "target_dataset_1000_companies.csv"
 
 
 def normalize_website(url: object) -> str:
@@ -67,7 +66,13 @@ def main() -> None:
         df = df[~df["company"].map(is_placeholder_company)]
     elif "company_name" in df.columns:
         df = df[~df["company_name"].map(is_placeholder_company)]
-    df = df.drop_duplicates(subset=["company_website"], keep="first")
+
+    deduped_records, dedupe_report = deduplicate_company_records(
+        df.to_dict(orient="records"),
+        score_fields=("lead_score", "company_ai_signal", "ai_signal"),
+        label="final_cleanup",
+    )
+    df = pd.DataFrame(deduped_records)
     df = df.sort_values("lead_score", ascending=False)
 
     export_rows = rows_for_reference_csv(df.to_dict(orient="records"))
@@ -89,6 +94,9 @@ def main() -> None:
         f"SUCCESS: Dataset now has {unique_companies} unique companies "
         f"with {len(REFERENCE_CSV_COLUMNS)} reference columns."
     )
+    print(f"Loaded: {dedupe_report.input_count}")
+    print(f"Duplicates removed: {dedupe_report.duplicates_removed}")
+    print(f"Final unique companies: {dedupe_report.final_count}")
     print("City counts:")
     print(export_df["city"].value_counts().sort_index().to_string())
 

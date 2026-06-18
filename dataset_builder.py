@@ -13,6 +13,10 @@ from ingestion import (
     _passes_filters,
 )
 from models import Company, Contact, TargetAccount
+from deduplication import (
+    company_identity_key,
+    deduplicate_company_records,
+)
 from seed_data import COMPANIES
 from services.enrichment import enrich_company
 from sorting_agent import sort_companies_for_final_cut
@@ -317,21 +321,31 @@ def build_target_dataset(db: Session) -> dict:
     db.query(TargetAccount).delete()
     db.flush()
 
-    inserted = 0
-    skipped = 0
-    seen_company_ids = set()
-
+    enriched_records: List[dict] = []
     for index, company in enumerate(companies):
-        if company.id in seen_company_ids:
-            skipped += 1
-            continue
-        seen_company_ids.add(company.id)
+        enriched_records.append(enrich_company(company, index))
 
+    deduped_records, dedupe_report = deduplicate_company_records(
+        enriched_records,
+        score_fields=("trust_opportunity_score", "icp_score", "ai_signal"),
+        label="target_accounts",
+    )
+
+    inserted = 0
+    skipped = len(enriched_records) - len(deduped_records)
+    seen_identities: set[tuple[str, str]] = set()
+
+    for enriched in deduped_records:
         if inserted >= MAX_TARGET_ACCOUNTS:
             skipped += 1
             continue
 
-        enriched = enrich_company(company, index)
+        identity = company_identity_key(enriched)
+        if identity in seen_identities:
+            skipped += 1
+            continue
+        seen_identities.add(identity)
+
         db.add(TargetAccount(**enriched, created_at=datetime.utcnow()))
         inserted += 1
 
@@ -342,6 +356,11 @@ def build_target_dataset(db: Session) -> dict:
         "previous_count": len(existing_company_ids),
         "total": inserted,
         "enriched": inserted,
+        "deduplication": {
+            "input_companies": dedupe_report.input_count,
+            "duplicates_removed": dedupe_report.duplicates_removed,
+            "final_unique_companies": dedupe_report.final_count,
+        },
     }
 
 
@@ -407,19 +426,16 @@ def save_master_dataset(db: Session, path: str = MASTER_DATASET_PATH) -> dict:
 
 
 def deduplicate_target_dataset_csv(csv_path: str) -> int:
-    """Drop duplicate companies by company_website, keeping the first row."""
+    """Drop duplicate companies before writing CSV export."""
     import pandas as pd
 
     path = Path(csv_path)
     df = pd.read_csv(path)
-    if "company_website" not in df.columns and "website" in df.columns:
-        df["company_website"] = df["website"]
-
-    before_count = len(df)
-    df = df.drop_duplicates(subset=["company_website"], keep="first")
-    export_rows = rows_for_reference_csv(df.to_dict(orient="records"))
+    records = df.to_dict(orient="records")
+    deduped, report = deduplicate_company_records(records, label="csv_export")
+    export_rows = rows_for_reference_csv(deduped)
     pd.DataFrame(export_rows, columns=REFERENCE_CSV_COLUMNS).to_csv(path, index=False)
-    return before_count - len(df)
+    return report.duplicates_removed
 
 
 def deduplicate_target_dataset_csv_content(csv_content: str) -> str:
@@ -429,13 +445,14 @@ def deduplicate_target_dataset_csv_content(csv_content: str) -> str:
     import pandas as pd
 
     df = pd.read_csv(io.StringIO(csv_content))
-    if "company_website" not in df.columns and "website" in df.columns:
-        df["company_website"] = df["website"]
-    df = df.drop_duplicates(subset=["company_website"], keep="first")
-    return reference_csv_from_rows(df.to_dict(orient="records"))
+    deduped, _report = deduplicate_company_records(
+        df.to_dict(orient="records"),
+        label="csv_export",
+    )
+    return reference_csv_from_rows(deduped)
 
 
-def export_target_dataset_csv(db: Session) -> str:
+def _exportable_target_rows(db: Session) -> list[dict]:
     rows = db.query(TargetAccount).order_by(TargetAccount.id).all()
     internal_rows = [
         target_account_to_dict(account)
@@ -443,21 +460,22 @@ def export_target_dataset_csv(db: Session) -> str:
         if account.city in ORIGINAL_TARGET_CITIES
         and not is_placeholder_company(account.company_name)
     ]
-    csv_content = reference_csv_from_rows(internal_rows)
-    return deduplicate_target_dataset_csv_content(csv_content)
+    deduped, _report = deduplicate_company_records(
+        internal_rows,
+        score_fields=("trust_opportunity_score", "icp_score", "ai_signal"),
+        label="target_accounts_export",
+    )
+    return deduped
+
+
+def export_target_dataset_csv(db: Session) -> str:
+    return reference_csv_from_rows(_exportable_target_rows(db))
 
 
 def export_target_dataset_xlsx(db: Session) -> bytes:
     from openpyxl import Workbook
 
-    rows = db.query(TargetAccount).order_by(TargetAccount.id).all()
-    internal_rows = [
-        target_account_to_dict(account)
-        for account in rows
-        if account.city in ORIGINAL_TARGET_CITIES
-        and not is_placeholder_company(account.company_name)
-    ]
-    export_rows = rows_for_reference_csv(internal_rows)
+    export_rows = rows_for_reference_csv(_exportable_target_rows(db))
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Target Accounts"

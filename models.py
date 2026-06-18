@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -49,6 +49,13 @@ class Contact(Base):
 
 class TargetAccount(Base):
     __tablename__ = "target_accounts"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_name",
+            "website",
+            name="uq_target_accounts_company_identity",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     company_id = Column(Integer, ForeignKey("companies.id"), unique=True, nullable=False)

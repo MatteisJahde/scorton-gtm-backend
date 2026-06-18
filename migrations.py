@@ -51,3 +51,15 @@ def migrate_db() -> None:
                     conn.execute(
                         text(f"ALTER TABLE target_accounts ADD COLUMN {column_name} {column_type}")
                     )
+
+            try:
+                conn.execute(
+                    text(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS "
+                        "uq_target_accounts_company_identity "
+                        "ON target_accounts (company_name, website)"
+                    )
+                )
+            except Exception:
+                # Existing duplicate rows prevent index creation until data is cleaned.
+                pass

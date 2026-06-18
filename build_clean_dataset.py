@@ -15,6 +15,7 @@ from dataset_builder import (
     rows_for_reference_csv,
     target_account_to_dict,
 )
+from deduplication import deduplicate_company_records
 from migrations import migrate_db
 from models import TargetAccount
 from sorting_agent import qualification_score_with_city
@@ -76,14 +77,24 @@ def build_clean_dataset() -> pd.DataFrame:
         lambda row: qualification_score_with_city(row.to_dict()),
         axis=1,
     )
-    df["company_website"] = df["company_website"].map(normalize_website)
-    df = df.drop_duplicates(subset=["company_website"], keep="first")
+
+    deduped_records, dedupe_report = deduplicate_company_records(
+        df.to_dict(orient="records"),
+        score_fields=("lead_score", "trust_opportunity_score", "company_ai_signal", "ai_signal"),
+        label="build_clean_dataset",
+    )
+    df = pd.DataFrame(deduped_records)
+    if "company_website" in df.columns:
+        df["company_website"] = df["company_website"].map(normalize_website)
     df = df.sort_values("lead_score", ascending=False)
 
     export_rows = rows_for_reference_csv(df.to_dict(orient="records"))
     export_df = pd.DataFrame(export_rows, columns=REFERENCE_CSV_COLUMNS)
     export_df.to_csv(OUTPUT_PATH, index=False)
     print(f"saved: {OUTPUT_PATH.resolve()}")
+    print(f"Loaded: {dedupe_report.input_count}")
+    print(f"Duplicates removed: {dedupe_report.duplicates_removed}")
+    print(f"Final unique companies: {dedupe_report.final_count}")
     return export_df
 
 
