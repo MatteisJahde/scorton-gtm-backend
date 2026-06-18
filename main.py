@@ -267,22 +267,49 @@ def _lead_intent(lead: dict) -> str:
     return HIGH_INTENT_VALUE if _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD else "low"
 
 
-def _lead_summary_row(lead: dict) -> dict:
-    score = _lead_score(lead)
-    company_name = str(lead.get("company_name") or lead.get("company") or "").strip()
-    return {
-        "id": lead.get("id"),
-        "company_name": company_name,
-        "company": company_name,
-        "company_website": lead.get("company_website") or lead.get("website"),
-        "industry": lead.get("industry"),
-        "city": lead.get("city"),
-        "intent": _lead_intent(lead),
-        LEADS_SUMMARY_SCORE_FIELD: score,
-        "buyer_name": lead.get("buyer_name"),
-        "job_title": lead.get("job_title"),
-        "work_email": lead.get("work_email"),
-    }
+def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
+    """Convert lead records to a dataframe with CSV-aligned column names."""
+    records = []
+    for lead in leads:
+        company = str(lead.get("company") or lead.get("company_name") or "").strip()
+        records.append(
+            {
+                "id": lead.get("id"),
+                "company": company,
+                "company_website": lead.get("company_website") or lead.get("website"),
+                "industry": lead.get("industry"),
+                "city": lead.get("city"),
+                "intent": _lead_intent(lead),
+                LEADS_SUMMARY_SCORE_FIELD: _lead_score(lead),
+                "buyer_name": lead.get("buyer_name"),
+                "job_title": lead.get("job_title"),
+                "work_email": lead.get("work_email"),
+            }
+        )
+    return pd.DataFrame(records)
+
+
+def _dedupe_raw_leads_by_company(leads: list[dict]) -> list[dict]:
+    """Remove duplicate companies from loaded lead records using the company column."""
+    if not leads:
+        return []
+
+    df = pd.DataFrame(leads)
+    if "company" not in df.columns:
+        df["company"] = ""
+    if "company_name" in df.columns:
+        df["company"] = df["company"].where(
+            df["company"].astype(str).str.strip() != "",
+            df["company_name"].astype(str).str.strip(),
+        )
+    df["company"] = df["company"].fillna("").astype(str).str.strip()
+    df = df.drop_duplicates(subset=["company"], keep="first")
+    return df.to_dict(orient="records")
+
+
+def _dedupe_leads_by_company(leads: list[dict]) -> list[dict]:
+    """Remove duplicate companies immediately after loading lead data."""
+    return _dedupe_raw_leads_by_company(leads)
 
 
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
@@ -290,8 +317,8 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
     if not leads:
         return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
 
-    df = pd.DataFrame([_lead_summary_row(lead) for lead in leads])
-    df = df.drop_duplicates(subset=["company_name"], keep="first")
+    df = _leads_to_dataframe(leads)
+    df = df.drop_duplicates(subset=["company"], keep="first")
     total_leads = len(df)
 
     high_intent_df = df[df["intent"] == HIGH_INTENT_VALUE].copy()
@@ -299,12 +326,12 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
         LEADS_SUMMARY_SCORE_FIELD,
         ascending=False,
     )
-    top_leads_df = high_intent_df.head(top_n)
+    top_100_leads = high_intent_df.head(top_n)
 
     return {
         "total_leads": total_leads,
         "high_intent_leads": len(high_intent_df),
-        "top_leads": top_leads_df.to_dict(orient="records"),
+        "top_leads": top_100_leads.to_dict(orient="records"),
     }
 
 
@@ -332,9 +359,10 @@ def get_all_leads(db: Session) -> list[dict]:
         )
 
         if rows:
-            return sort_companies_for_final_cut(
+            leads = sort_companies_for_final_cut(
                 [target_account_to_dict(account) for account in rows]
             )
+            return _dedupe_raw_leads_by_company(leads)
 
         if CYBERSECURITY_LEADS_PATH.exists():
             with CYBERSECURITY_LEADS_PATH.open(encoding="utf-8") as leads_file:
@@ -350,7 +378,7 @@ def get_all_leads(db: Session) -> list[dict]:
                 ),
                 reverse=True,
             )
-            return all_leads
+            return _dedupe_raw_leads_by_company(all_leads)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
