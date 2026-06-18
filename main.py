@@ -330,6 +330,12 @@ def api_dashboard_metrics(db: Session = Depends(get_db)):
     )
 
 
+@app.get("/api/leads-summary")
+def leads_summary(db: Session = Depends(get_db)):
+    """Dashboard counts: all leads vs high-intent (score >= 80)."""
+    return calculate_dashboard_metrics(get_all_leads(db))
+
+
 @api_router.get("/qualified-companies")
 def api_qualified_companies(db: Session = Depends(get_db)):
     all_qualified_companies = get_qualified_companies(db)
