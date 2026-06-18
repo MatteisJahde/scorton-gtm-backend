@@ -3,6 +3,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import pandas as pd
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -284,12 +285,22 @@ def _lead_summary_row(lead: dict) -> dict:
 
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
     """Build dashboard summary: counts plus top high-intent leads by score."""
-    high_intent_leads = [lead for lead in leads if _lead_intent(lead) == HIGH_INTENT_VALUE]
-    high_intent_leads.sort(key=_lead_score, reverse=True)
+    total_leads = len(leads)
+    if not leads:
+        return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
+
+    df = pd.DataFrame([_lead_summary_row(lead) for lead in leads])
+    high_intent_df = df[df["intent"] == HIGH_INTENT_VALUE].copy()
+    high_intent_df = high_intent_df.sort_values(
+        LEADS_SUMMARY_SCORE_FIELD,
+        ascending=False,
+    )
+    top_leads_df = high_intent_df.head(top_n)
+
     return {
-        "total_leads": len(leads),
-        "high_intent_leads": len(high_intent_leads),
-        "top_leads": [_lead_summary_row(lead) for lead in high_intent_leads[:top_n]],
+        "total_leads": total_leads,
+        "high_intent_leads": len(high_intent_df),
+        "top_leads": top_leads_df.to_dict(orient="records"),
     }
 
 
