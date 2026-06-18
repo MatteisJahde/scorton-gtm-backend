@@ -1,0 +1,802 @@
+[
+  {
+    "id": 1,
+    "company_name": "Apex Capital Partners",
+    "recipient_email": "logan.sullivan@apexcapitalpartners.com",
+    "subject": "secure AI adoption / Apex Capital Partners",
+    "body": "Hi Logan,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Apex Capital Partners could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 2,
+    "company_name": "Nova Risk Group 0493",
+    "recipient_email": "quinn.walsh@novariskgroup0493.com",
+    "subject": "compliance data flows / Nova Risk Group 0493",
+    "body": "Hi Quinn,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Nova Risk Group 0493 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 3,
+    "company_name": "Lighthouse Ledger Group 0491",
+    "recipient_email": "morgan.walsh@lighthouseledgergroup0491.com",
+    "subject": "data pipeline infrastructure / Lighthouse Ledger Group 0491",
+    "body": "Hi Morgan,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Lighthouse Ledger Group 0491 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 4,
+    "company_name": "Keystone Coverage Group 0490",
+    "recipient_email": "quinnpatel@keystonecoveragegroup0490.com",
+    "subject": "compliance data flows / Keystone Coverage Group 0490",
+    "body": "Hi Quinn,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Keystone Coverage Group 0490 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 5,
+    "company_name": "Juniper Securities Group 0489",
+    "recipient_email": "casey.turner@junipersecuritiesgroup0489.com",
+    "subject": "secure AI adoption / Juniper Securities Group 0489",
+    "body": "Hi Casey,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Juniper Securities Group 0489 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 6,
+    "company_name": "Iron Ledger Group 0488",
+    "recipient_email": "morgan.walsh@ironledgergroup0488.com",
+    "subject": "data pipeline infrastructure / Iron Ledger Group 0488",
+    "body": "Hi Morgan,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Iron Ledger Group 0488 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 7,
+    "company_name": "Harbor Underwriters Group 0487",
+    "recipient_email": "harperpatel@harborunderwritersgroup0487.com",
+    "subject": "compliance data flows / Harbor Underwriters Group 0487",
+    "body": "Hi Harper,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Harbor Underwriters Group 0487 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 8,
+    "company_name": "Granite Advisors Group 0486",
+    "recipient_email": "cameron.vargas@graniteadvisorsgroup0486.com",
+    "subject": "secure AI adoption / Granite Advisors Group 0486",
+    "body": "Hi Cameron,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Granite Advisors Group 0486 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 9,
+    "company_name": "Falcon Audit Group 0485",
+    "recipient_email": "alex.vargas@falconauditgroup0485.com",
+    "subject": "data pipeline infrastructure / Falcon Audit Group 0485",
+    "body": "Hi Alex,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Falcon Audit Group 0485 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 10,
+    "company_name": "Echo Underwriters Group 0484",
+    "recipient_email": "jordan.nguyen@echounderwritersgroup0484.com",
+    "subject": "compliance data flows / Echo Underwriters Group 0484",
+    "body": "Hi Jordan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Echo Underwriters Group 0484 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 11,
+    "company_name": "Harbor Coverage Group 0457",
+    "recipient_email": "drewsullivan@harborcoveragegroup0457.com",
+    "subject": "compliance data flows / Harbor Coverage Group 0457",
+    "body": "Hi Drew,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Harbor Coverage Group 0457 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 12,
+    "company_name": "Granite Securities Group 0456",
+    "recipient_email": "avery.patel@granitesecuritiesgroup0456.com",
+    "subject": "secure AI adoption / Granite Securities Group 0456",
+    "body": "Hi Avery,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Granite Securities Group 0456 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 13,
+    "company_name": "Falcon Audit Group 0455",
+    "recipient_email": "casey.walsh@falconauditgroup0455.com",
+    "subject": "data pipeline infrastructure / Falcon Audit Group 0455",
+    "body": "Hi Casey,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Falcon Audit Group 0455 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 14,
+    "company_name": "Echo Underwriters Group 0454",
+    "recipient_email": "riley.nguyen@echounderwritersgroup0454.com",
+    "subject": "compliance data flows / Echo Underwriters Group 0454",
+    "body": "Hi Riley,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Echo Underwriters Group 0454 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 15,
+    "company_name": "Delta Advisors Group 0453",
+    "recipient_email": "jamie.turner@deltaadvisorsgroup0453.com",
+    "subject": "secure AI adoption / Delta Advisors Group 0453",
+    "body": "Hi Jamie,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Delta Advisors Group 0453 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 16,
+    "company_name": "Crown Audit Group 0452",
+    "recipient_email": "blake.reed@crownauditgroup0452.com",
+    "subject": "data pipeline infrastructure / Crown Audit Group 0452",
+    "body": "Hi Blake,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Crown Audit Group 0452 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 17,
+    "company_name": "Beacon Mutual Group 0451",
+    "recipient_email": "blake.patel@beaconmutualgroup0451.com",
+    "subject": "compliance data flows / Beacon Mutual Group 0451",
+    "body": "Hi Blake,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Beacon Mutual Group 0451 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 18,
+    "company_name": "Atlas Capital Group 0450",
+    "recipient_email": "taylorwalsh@atlascapitalgroup0450.com",
+    "subject": "secure AI adoption / Atlas Capital Group 0450",
+    "body": "Hi Taylor,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Atlas Capital Group 0450 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 19,
+    "company_name": "Frontier CPA Group 0449",
+    "recipient_email": "taylor.sullivan@frontiercpagroup0449.com",
+    "subject": "data pipeline infrastructure / Frontier CPA Group 0449",
+    "body": "Hi Taylor,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Frontier CPA Group 0449 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 20,
+    "company_name": "Evergreen Mutual Group 0448",
+    "recipient_email": "harper.patel@evergreenmutualgroup0448.com",
+    "subject": "compliance data flows / Evergreen Mutual Group 0448",
+    "body": "Hi Harper,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Evergreen Mutual Group 0448 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 21,
+    "company_name": "Dominion Wealth Group 0447",
+    "recipient_email": "cameronvargas@dominionwealthgroup0447.com",
+    "subject": "secure AI adoption / Dominion Wealth Group 0447",
+    "body": "Hi Cameron,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Dominion Wealth Group 0447 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 22,
+    "company_name": "Atlas Advisors Group 0420",
+    "recipient_email": "cameronhayes@atlasadvisorsgroup0420.com",
+    "subject": "secure AI adoption / Atlas Advisors Group 0420",
+    "body": "Hi Cameron,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Atlas Advisors Group 0420 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 23,
+    "company_name": "Frontier CPA Group 0419",
+    "recipient_email": "elliot.kim@frontiercpagroup0419.com",
+    "subject": "data pipeline infrastructure / Frontier CPA Group 0419",
+    "body": "Hi Elliot,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Frontier CPA Group 0419 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 24,
+    "company_name": "Evergreen Mutual Group 0418",
+    "recipient_email": "quinnbrooks@evergreenmutualgroup0418.com",
+    "subject": "compliance data flows / Evergreen Mutual Group 0418",
+    "body": "Hi Quinn,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Evergreen Mutual Group 0418 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 25,
+    "company_name": "Dominion Capital Group 0417",
+    "recipient_email": "drew.patel@dominioncapitalgroup0417.com",
+    "subject": "secure AI adoption / Dominion Capital Group 0417",
+    "body": "Hi Drew,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Dominion Capital Group 0417 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 26,
+    "company_name": "Catalyst CPA Group 0416",
+    "recipient_email": "taylor.sullivan@catalystcpagroup0416.com",
+    "subject": "data pipeline infrastructure / Catalyst CPA Group 0416",
+    "body": "Hi Taylor,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Catalyst CPA Group 0416 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 27,
+    "company_name": "Bridgewater Brokers Group 0415",
+    "recipient_email": "morgan.chen@bridgewaterbrokersgroup0415.com",
+    "subject": "compliance data flows / Bridgewater Brokers Group 0415",
+    "body": "Hi Morgan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Bridgewater Brokers Group 0415 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 28,
+    "company_name": "Meridian Partners Group 0492",
+    "recipient_email": "cameron.hayes@meridianpartnersgroup0492.com",
+    "subject": "secure AI adoption / Meridian Partners Group 0492",
+    "body": "Hi Cameron,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Meridian Partners Group 0492 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 29,
+    "company_name": "Orion Tax Partners Group 0494",
+    "recipient_email": "jamie.hayes@oriontaxpartnersgroup0494.com",
+    "subject": "data pipeline infrastructure / Orion Tax Partners Group 0494",
+    "body": "Hi Jamie,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Orion Tax Partners Group 0494 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 30,
+    "company_name": "Zenith Advisory Group 0413",
+    "recipient_email": "drew.vargas@zenithadvisorygroup0413.com",
+    "subject": "data pipeline infrastructure / Zenith Advisory Group 0413",
+    "body": "Hi Drew,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Zenith Advisory Group 0413 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 31,
+    "company_name": "Lighthouse Ledger Group 0521",
+    "recipient_email": "alex.foster@lighthouseledgergroup0521.com",
+    "subject": "data pipeline infrastructure / Lighthouse Ledger Group 0521",
+    "body": "Hi Alex,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Lighthouse Ledger Group 0521 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 32,
+    "company_name": "Evergreen Indemnity Group 0598",
+    "recipient_email": "drew.brooks@evergreenindemnitygroup0598.com",
+    "subject": "compliance data flows / Evergreen Indemnity Group 0598",
+    "body": "Hi Drew,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Evergreen Indemnity Group 0598 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 33,
+    "company_name": "Dominion Holdings Group 0597",
+    "recipient_email": "quinn.walsh@dominionholdingsgroup0597.com",
+    "subject": "secure AI adoption / Dominion Holdings Group 0597",
+    "body": "Hi Quinn,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Dominion Holdings Group 0597 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 34,
+    "company_name": "Catalyst Associates Group 0596",
+    "recipient_email": "casey.chen@catalystassociatesgroup0596.com",
+    "subject": "data pipeline infrastructure / Catalyst Associates Group 0596",
+    "body": "Hi Casey,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Catalyst Associates Group 0596 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 35,
+    "company_name": "Bridgewater Assurance Group 0595",
+    "recipient_email": "elliot.bennett@bridgewaterassurancegroup059.com",
+    "subject": "compliance data flows / Bridgewater Assurance Group 0595",
+    "body": "Hi Elliot,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Bridgewater Assurance Group 0595 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 36,
+    "company_name": "Evergreen Actuarial Group 0568",
+    "recipient_email": "cameron.patel@evergreenactuarialgroup0568.com",
+    "subject": "compliance data flows / Evergreen Actuarial Group 0568",
+    "body": "Hi Cameron,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Evergreen Actuarial Group 0568 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 37,
+    "company_name": "Dominion Holdings Group 0567",
+    "recipient_email": "morgan.kim@dominionholdingsgroup0567.com",
+    "subject": "secure AI adoption / Dominion Holdings Group 0567",
+    "body": "Hi Morgan,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Dominion Holdings Group 0567 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 38,
+    "company_name": "Catalyst Associates Group 0566",
+    "recipient_email": "quinn.turner@catalystassociatesgroup0566.com",
+    "subject": "data pipeline infrastructure / Catalyst Associates Group 0566",
+    "body": "Hi Quinn,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Catalyst Associates Group 0566 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 39,
+    "company_name": "Bridgewater Indemnity Group 0565",
+    "recipient_email": "blake.brooks@bridgewaterindemnitygroup056.com",
+    "subject": "compliance data flows / Bridgewater Indemnity Group 0565",
+    "body": "Hi Blake,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Bridgewater Indemnity Group 0565 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 40,
+    "company_name": "Axiom Holdings Group 0564",
+    "recipient_email": "taylor.sullivan@axiomholdingsgroup0564.com",
+    "subject": "secure AI adoption / Axiom Holdings Group 0564",
+    "body": "Hi Taylor,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Axiom Holdings Group 0564 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 41,
+    "company_name": "Zenith Advisors Group 0563",
+    "recipient_email": "cameronbrooks@zenithadvisorsgroup0563.com",
+    "subject": "data pipeline infrastructure / Zenith Advisors Group 0563",
+    "body": "Hi Cameron,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Zenith Advisors Group 0563 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 42,
+    "company_name": "Westfield Assurance Group 0562",
+    "recipient_email": "riley.nguyen@westfieldassurancegroup0562.com",
+    "subject": "compliance data flows / Westfield Assurance Group 0562",
+    "body": "Hi Riley,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Westfield Assurance Group 0562 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 43,
+    "company_name": "Vertex Trust Group 0561",
+    "recipient_email": "jamie.turner@vertextrustgroup0561.com",
+    "subject": "secure AI adoption / Vertex Trust Group 0561",
+    "body": "Hi Jamie,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Vertex Trust Group 0561 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 44,
+    "company_name": "Union Advisors Group 0560",
+    "recipient_email": "blakepatel@unionadvisorsgroup0560.com",
+    "subject": "data pipeline infrastructure / Union Advisors Group 0560",
+    "body": "Hi Blake,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Union Advisors Group 0560 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 45,
+    "company_name": "Titan Risk Group 0559",
+    "recipient_email": "jamie.brooks@titanriskgroup0559.com",
+    "subject": "compliance data flows / Titan Risk Group 0559",
+    "body": "Hi Jamie,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Titan Risk Group 0559 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 46,
+    "company_name": "Sterling Partners Group 0558",
+    "recipient_email": "avery.patel@sterlingpartnersgroup0558.com",
+    "subject": "secure AI adoption / Sterling Partners Group 0558",
+    "body": "Hi Avery,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Sterling Partners Group 0558 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 47,
+    "company_name": "Vertex Trust Group 0531",
+    "recipient_email": "alex.chen@vertextrustgroup0531.com",
+    "subject": "secure AI adoption / Vertex Trust Group 0531",
+    "body": "Hi Alex,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Vertex Trust Group 0531 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 48,
+    "company_name": "Union Advisors Group 0530",
+    "recipient_email": "taylornguyen@unionadvisorsgroup0530.com",
+    "subject": "data pipeline infrastructure / Union Advisors Group 0530",
+    "body": "Hi Taylor,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Union Advisors Group 0530 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 49,
+    "company_name": "Titan Assurance Group 0529",
+    "recipient_email": "cameron.diaz@titanassurancegroup0529.com",
+    "subject": "compliance data flows / Titan Assurance Group 0529",
+    "body": "Hi Cameron,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Titan Assurance Group 0529 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 50,
+    "company_name": "Sterling Trust Group 0528",
+    "recipient_email": "riley.chen@sterlingtrustgroup0528.com",
+    "subject": "secure AI adoption / Sterling Trust Group 0528",
+    "body": "Hi Riley,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Sterling Trust Group 0528 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 51,
+    "company_name": "River Tax Partners Group 0527",
+    "recipient_email": "drew.patel@rivertaxpartnersgroup0527.com",
+    "subject": "data pipeline infrastructure / River Tax Partners Group 0527",
+    "body": "Hi Drew,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how River Tax Partners Group 0527 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 52,
+    "company_name": "Quantum Risk Group 0526",
+    "recipient_email": "riley.reed@quantumriskgroup0526.com",
+    "subject": "compliance data flows / Quantum Risk Group 0526",
+    "body": "Hi Riley,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Quantum Risk Group 0526 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 53,
+    "company_name": "Pioneer Partners Group 0525",
+    "recipient_email": "averypatel@pioneerpartnersgroup0525.com",
+    "subject": "secure AI adoption / Pioneer Partners Group 0525",
+    "body": "Hi Avery,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Pioneer Partners Group 0525 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 54,
+    "company_name": "Orion Tax Partners Group 0524",
+    "recipient_email": "drew.hayes@oriontaxpartnersgroup0524.com",
+    "subject": "data pipeline infrastructure / Orion Tax Partners Group 0524",
+    "body": "Hi Drew,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Orion Tax Partners Group 0524 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 55,
+    "company_name": "Nova Coverage Group 0523",
+    "recipient_email": "harper.vargas@novacoveragegroup0523.com",
+    "subject": "compliance data flows / Nova Coverage Group 0523",
+    "body": "Hi Harper,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Nova Coverage Group 0523 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 56,
+    "company_name": "Meridian Securities Group 0522",
+    "recipient_email": "alex.vargas@meridiansecuritiesgroup0522.com",
+    "subject": "secure AI adoption / Meridian Securities Group 0522",
+    "body": "Hi Alex,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Meridian Securities Group 0522 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 57,
+    "company_name": "Axiom Wealth Group 0414",
+    "recipient_email": "alexbennett@axiomwealthgroup0414.com",
+    "subject": "secure AI adoption / Axiom Wealth Group 0414",
+    "body": "Hi Alex,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Axiom Wealth Group 0414 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 58,
+    "company_name": "Westfield Brokers Group 0412",
+    "recipient_email": "harper.sullivan@westfieldbrokersgroup0412.com",
+    "subject": "compliance data flows / Westfield Brokers Group 0412",
+    "body": "Hi Harper,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Westfield Brokers Group 0412 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 59,
+    "company_name": "Atlas Finance Group 0600",
+    "recipient_email": "alex.sullivan@atlasfinancegroup0600.com",
+    "subject": "secure AI adoption / Atlas Finance Group 0600",
+    "body": "Hi Alex,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Atlas Finance Group 0600 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 60,
+    "company_name": "Falcon Advisors Group 0305",
+    "recipient_email": "jordan.vargas@falconadvisorsgroup0305.com",
+    "subject": "data pipeline infrastructure / Falcon Advisors Group 0305",
+    "body": "Hi Jordan,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Falcon Advisors Group 0305 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 61,
+    "company_name": "Delta Partners Group 0303",
+    "recipient_email": "elliotdiaz@deltapartnersgroup0303.com",
+    "subject": "secure AI adoption / Delta Partners Group 0303",
+    "body": "Hi Elliot,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Delta Partners Group 0303 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 62,
+    "company_name": "Crown Tax Partners Group 0302",
+    "recipient_email": "drew.diaz@crowntaxpartnersgroup0302.com",
+    "subject": "data pipeline infrastructure / Crown Tax Partners Group 0302",
+    "body": "Hi Drew,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Crown Tax Partners Group 0302 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 63,
+    "company_name": "Beacon Risk Group 0301",
+    "recipient_email": "blake.hayes@beaconriskgroup0301.com",
+    "subject": "compliance data flows / Beacon Risk Group 0301",
+    "body": "Hi Blake,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Beacon Risk Group 0301 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 64,
+    "company_name": "Atlas Partners Group 0300",
+    "recipient_email": "elliotpatel@atlaspartnersgroup0300.com",
+    "subject": "secure AI adoption / Atlas Partners Group 0300",
+    "body": "Hi Elliot,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Atlas Partners Group 0300 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 65,
+    "company_name": "Frontier Ledger Group 0299",
+    "recipient_email": "harper.foster@frontierledgergroup0299.com",
+    "subject": "data pipeline infrastructure / Frontier Ledger Group 0299",
+    "body": "Hi Harper,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Frontier Ledger Group 0299 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 66,
+    "company_name": "Crown Advisors Group 0272",
+    "recipient_email": "elliot.diaz@crownadvisorsgroup0272.com",
+    "subject": "data pipeline infrastructure / Crown Advisors Group 0272",
+    "body": "Hi Elliot,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Crown Advisors Group 0272 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 67,
+    "company_name": "Beacon Risk Group 0271",
+    "recipient_email": "morgankim@beaconriskgroup0271.com",
+    "subject": "compliance data flows / Beacon Risk Group 0271",
+    "body": "Hi Morgan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Beacon Risk Group 0271 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 68,
+    "company_name": "Atlas Partners Group 0270",
+    "recipient_email": "avery.turner@atlaspartnersgroup0270.com",
+    "subject": "secure AI adoption / Atlas Partners Group 0270",
+    "body": "Hi Avery,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Atlas Partners Group 0270 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 69,
+    "company_name": "Frontier Tax Partners Group 0269",
+    "recipient_email": "jamie.hayes@frontiertaxpartnersgroup0269.com",
+    "subject": "data pipeline infrastructure / Frontier Tax Partners Group 0269",
+    "body": "Hi Jamie,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Frontier Tax Partners Group 0269 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 70,
+    "company_name": "Evergreen Risk Group 0268",
+    "recipient_email": "drewbennett@evergreenriskgroup0268.com",
+    "subject": "compliance data flows / Evergreen Risk Group 0268",
+    "body": "Hi Drew,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Evergreen Risk Group 0268 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 71,
+    "company_name": "Dominion Securities Group 0267",
+    "recipient_email": "alex.foster@dominionsecuritiesgroup0267.com",
+    "subject": "secure AI adoption / Dominion Securities Group 0267",
+    "body": "Hi Alex,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Dominion Securities Group 0267 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 72,
+    "company_name": "Catalyst Ledger Group 0266",
+    "recipient_email": "taylorcoleman@catalystledgergroup0266.com",
+    "subject": "data pipeline infrastructure / Catalyst Ledger Group 0266",
+    "body": "Hi Taylor,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Catalyst Ledger Group 0266 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 73,
+    "company_name": "Bridgewater Coverage Group 0265",
+    "recipient_email": "jordan.nguyen@bridgewatercoveragegroup0265.com",
+    "subject": "compliance data flows / Bridgewater Coverage Group 0265",
+    "body": "Hi Jordan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Bridgewater Coverage Group 0265 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 74,
+    "company_name": "Axiom Securities Group 0264",
+    "recipient_email": "jamie.turner@axiomsecuritiesgroup0264.com",
+    "subject": "secure AI adoption / Axiom Securities Group 0264",
+    "body": "Hi Jamie,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Axiom Securities Group 0264 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 75,
+    "company_name": "Zenith Audit Group 0263",
+    "recipient_email": "elliot.bennett@zenithauditgroup0263.com",
+    "subject": "data pipeline infrastructure / Zenith Audit Group 0263",
+    "body": "Hi Elliot,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Zenith Audit Group 0263 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 76,
+    "company_name": "Westfield Underwriters Group 0262",
+    "recipient_email": "averyhayes@westfieldunderwritersgroup02.com",
+    "subject": "compliance data flows / Westfield Underwriters Group 0262",
+    "body": "Hi Avery,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Westfield Underwriters Group 0262 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 77,
+    "company_name": "Bridgewater Coverage Group 0235",
+    "recipient_email": "cameron.diaz@bridgewatercoveragegroup0235.com",
+    "subject": "compliance data flows / Bridgewater Coverage Group 0235",
+    "body": "Hi Cameron,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Bridgewater Coverage Group 0235 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 78,
+    "company_name": "Axiom Securities Group 0234",
+    "recipient_email": "logan.foster@axiomsecuritiesgroup0234.com",
+    "subject": "secure AI adoption / Axiom Securities Group 0234",
+    "body": "Hi Logan,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Axiom Securities Group 0234 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 79,
+    "company_name": "Zenith Ledger Group 0233",
+    "recipient_email": "rileychen@zenithledgergroup0233.com",
+    "subject": "data pipeline infrastructure / Zenith Ledger Group 0233",
+    "body": "Hi Riley,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Zenith Ledger Group 0233 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 80,
+    "company_name": "Westfield Coverage Group 0232",
+    "recipient_email": "harperbennett@westfieldcoveragegroup0232.com",
+    "subject": "compliance data flows / Westfield Coverage Group 0232",
+    "body": "Hi Harper,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Westfield Coverage Group 0232 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 81,
+    "company_name": "Vertex Advisors Group 0231",
+    "recipient_email": "jamie.chen@vertexadvisorsgroup0231.com",
+    "subject": "secure AI adoption / Vertex Advisors Group 0231",
+    "body": "Hi Jamie,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Vertex Advisors Group 0231 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 82,
+    "company_name": "Union Audit Group 0230",
+    "recipient_email": "alexfoster@unionauditgroup0230.com",
+    "subject": "data pipeline infrastructure / Union Audit Group 0230",
+    "body": "Hi Alex,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Union Audit Group 0230 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 83,
+    "company_name": "Titan Underwriters Group 0229",
+    "recipient_email": "taylor.walsh@titanunderwritersgroup0229.com",
+    "subject": "compliance data flows / Titan Underwriters Group 0229",
+    "body": "Hi Taylor,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Titan Underwriters Group 0229 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 84,
+    "company_name": "Sterling Advisors Group 0228",
+    "recipient_email": "elliot.brooks@sterlingadvisorsgroup0228.com",
+    "subject": "secure AI adoption / Sterling Advisors Group 0228",
+    "body": "Hi Elliot,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Sterling Advisors Group 0228 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 85,
+    "company_name": "River CPA Group 0227",
+    "recipient_email": "riley.nguyen@rivercpagroup0227.com",
+    "subject": "data pipeline infrastructure / River CPA Group 0227",
+    "body": "Hi Riley,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how River CPA Group 0227 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 86,
+    "company_name": "Echo Assurance Group 0304",
+    "recipient_email": "casey.turner@echoassurancegroup0304.com",
+    "subject": "compliance data flows / Echo Assurance Group 0304",
+    "body": "Hi Casey,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Echo Assurance Group 0304 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 87,
+    "company_name": "Granite Trust Group 0306",
+    "recipient_email": "riley.chen@granitetrustgroup0306.com",
+    "subject": "secure AI adoption / Granite Trust Group 0306",
+    "body": "Hi Riley,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Granite Trust Group 0306 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 88,
+    "company_name": "Vertex Finance Group 0411",
+    "recipient_email": "rileychen@vertexfinancegroup0411.com",
+    "subject": "secure AI adoption / Vertex Finance Group 0411",
+    "body": "Hi Riley,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Vertex Finance Group 0411 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 89,
+    "company_name": "Harbor Assurance Group 0307",
+    "recipient_email": "elliot.bennett@harborassurancegroup0307.com",
+    "subject": "compliance data flows / Harbor Assurance Group 0307",
+    "body": "Hi Elliot,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Harbor Assurance Group 0307 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 90,
+    "company_name": "Union Compliance Group 0410",
+    "recipient_email": "taylor.nguyen@unioncompliancegroup0410.com",
+    "subject": "data pipeline infrastructure / Union Compliance Group 0410",
+    "body": "Hi Taylor,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Union Compliance Group 0410 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 91,
+    "company_name": "Zenith Advisory Group 0383",
+    "recipient_email": "blake.brooks@zenithadvisorygroup0383.com",
+    "subject": "data pipeline infrastructure / Zenith Advisory Group 0383",
+    "body": "Hi Blake,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Zenith Advisory Group 0383 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 92,
+    "company_name": "Westfield Brokers Group 0382",
+    "recipient_email": "jordanvargas@westfieldbrokersgroup0382.com",
+    "subject": "compliance data flows / Westfield Brokers Group 0382",
+    "body": "Hi Jordan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Westfield Brokers Group 0382 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 93,
+    "company_name": "Vertex Wealth Group 0381",
+    "recipient_email": "taylor.kim@vertexwealthgroup0381.com",
+    "subject": "secure AI adoption / Vertex Wealth Group 0381",
+    "body": "Hi Taylor,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Vertex Wealth Group 0381 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 94,
+    "company_name": "Union Advisory Group 0380",
+    "recipient_email": "quinn.patel@unionadvisorygroup0380.com",
+    "subject": "data pipeline infrastructure / Union Advisory Group 0380",
+    "body": "Hi Quinn,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Union Advisory Group 0380 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 95,
+    "company_name": "Titan Actuarial Group 0379",
+    "recipient_email": "jordan.nguyen@titanactuarialgroup0379.com",
+    "subject": "compliance data flows / Titan Actuarial Group 0379",
+    "body": "Hi Jordan,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Titan Actuarial Group 0379 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 96,
+    "company_name": "Sterling Finance Group 0378",
+    "recipient_email": "quinnpatel@sterlingfinancegroup0378.com",
+    "subject": "secure AI adoption / Sterling Finance Group 0378",
+    "body": "Hi Quinn,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Sterling Finance Group 0378 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 97,
+    "company_name": "River Compliance Group 0377",
+    "recipient_email": "morgan.chen@rivercompliancegroup0377.com",
+    "subject": "data pipeline infrastructure / River Compliance Group 0377",
+    "body": "Hi Morgan,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how River Compliance Group 0377 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 98,
+    "company_name": "Quantum Actuarial Group 0376",
+    "recipient_email": "riley.turner@quantumactuarialgroup0376.com",
+    "subject": "compliance data flows / Quantum Actuarial Group 0376",
+    "body": "Hi Riley,\n\nFor Insurance teams where regulatory compliance and AI governance is the priority, control evidence fragmenting across AI governance and compliance workflows is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on regulatory compliance and AI governance, the specific bottleneck is audit-trail gaps widening as AI governance platforms deploy faster than compliance teams can validate evidence chains — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate control-evidence and audit-trail layers across data pipelines — giving teams like yours the visibility to close those gaps without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Quantum Actuarial Group 0376 could specifically resolve these AI governance compliance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 99,
+    "company_name": "Pioneer Holdings Group 0375",
+    "recipient_email": "caseychen@pioneerholdingsgroup0375.com",
+    "subject": "secure AI adoption / Pioneer Holdings Group 0375",
+    "body": "Hi Casey,\n\nFor Financial Services teams where secure AI adoption and model risk management is the priority, model input governance breaking down as models move from sandbox to production is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on secure AI adoption and model risk management, the specific bottleneck is ungoverned training data and inference inputs reaching client-facing workflows without lineage tracking — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate the model governance and pipeline security layers that help teams like yours bridge that gap without adding manual compliance overhead.\n\nI put together a 2-minute diagnostic breakdown of how Pioneer Holdings Group 0375 could specifically resolve these model input governance gaps. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  },
+  {
+    "id": 100,
+    "company_name": "Orion Associates Group 0374",
+    "recipient_email": "elliot.brooks@orionassociatesgroup0374.com",
+    "subject": "data pipeline infrastructure / Orion Associates Group 0374",
+    "body": "Hi Elliot,\n\nFor Accounting teams where workflow security and automated control monitoring is the priority, automated workflow changes outpacing access control and monitoring reviews is becoming the first breaking point — especially under GTM velocity pressure.\n\nIn environments centered on workflow security and automated control monitoring, the specific bottleneck is control drift between audit cycles as automation ships faster than governance sign-off on new data paths — typically surfacing after release, not during architecture review.\n\nAt Scorton, we automate workflow control monitoring across data pipelines — helping teams like yours catch drift before it becomes an audit finding, without slowing delivery.\n\nI put together a 2-minute diagnostic breakdown of how Orion Associates Group 0374 could specifically resolve these workflow control drift. Worth sending over?\n\n— The Scorton team.",
+    "status": "pending_approval"
+  }
+]
