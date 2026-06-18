@@ -37,33 +37,21 @@ from models import Company, Contact, TargetAccount
 from services.weekly_batch import pull_weekly_batch
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api_router = APIRouter(prefix="/api")
 
 QUALIFIED_BATCH_SIZE = 100
 HIGH_INTENT_SCORE_THRESHOLD = 80
 CYBERSECURITY_LEADS_PATH = (
     Path(__file__).resolve().parent / "data" / "target_dataset_1000_companies.csv"
-)
-
-# Must match your Lovable frontend origin exactly.
-origins = [
-    "https://lovable.dev",
-    "https://lovable.app",
-    "https://lovable.dev/projects/a07c73da-b286-487a-9379-0b9720716cd5",  # Your specific project
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
-
-# Add your Lovable preview URL via .env: FRONTEND_URL=https://your-project.lovable.app
-if FRONTEND_URL and FRONTEND_URL not in origins:
-    origins.append(FRONTEND_URL)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 
@@ -192,7 +180,7 @@ def api_config():
             "api_base_url": API_BASE_URL,
             "frontend_url": FRONTEND_URL,
             "environment": ENVIRONMENT,
-            "cors_origins": origins,
+            "cors_origins": ["*"],
         }
     )
 
