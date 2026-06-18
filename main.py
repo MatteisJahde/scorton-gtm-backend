@@ -247,11 +247,26 @@ def _lead_score(lead: dict) -> float:
 
 def _filter_high_intent_leads(leads: list[dict]) -> list[dict]:
     """Return only High Intent leads (score >= 80)."""
-    return [lead for lead in leads if _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD]
+    return [lead for lead in leads if _is_high_intent_lead(lead)]
 
 
-def get_qualified_companies(db: Session) -> list[dict]:
-    """Load vetted cybersecurity leads from TargetAccount or the master CSV."""
+def _is_high_intent_lead(lead: dict) -> bool:
+    """High intent when resolved lead score meets the configured threshold."""
+    return _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD
+
+
+def calculate_dashboard_metrics(leads: list[dict]) -> dict:
+    """Compute total vs high-intent lead counts from the full lead dataset."""
+    total_leads = len(leads)
+    high_intent_leads = sum(1 for lead in leads if _is_high_intent_lead(lead))
+    return {
+        "total_leads": total_leads,
+        "high_intent_leads": high_intent_leads,
+    }
+
+
+def get_all_leads(db: Session) -> list[dict]:
+    """Load all leads from TargetAccount or the master CSV (no intent filter)."""
     try:
         rows = (
             db.query(TargetAccount)
@@ -264,15 +279,16 @@ def get_qualified_companies(db: Session) -> list[dict]:
         )
 
         if rows:
-            leads = [target_account_to_dict(account) for account in rows]
-            return _filter_high_intent_leads(sort_companies_for_final_cut(leads))
+            return sort_companies_for_final_cut(
+                [target_account_to_dict(account) for account in rows]
+            )
 
         if CYBERSECURITY_LEADS_PATH.exists():
             with CYBERSECURITY_LEADS_PATH.open(encoding="utf-8") as leads_file:
-                all_qualified_companies = [
+                all_leads = [
                     expand_standard_csv_row(row) for row in csv.DictReader(leads_file)
                 ]
-            all_qualified_companies.sort(
+            all_leads.sort(
                 key=lambda lead: float(
                     lead.get("trust_opportunity_score")
                     or lead.get("company_ai_signal")
@@ -281,14 +297,37 @@ def get_qualified_companies(db: Session) -> list[dict]:
                 ),
                 reverse=True,
             )
-            return _filter_high_intent_leads(all_qualified_companies)
+            return all_leads
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to load qualified companies: {exc}",
+            detail=f"Failed to load leads: {exc}",
         ) from exc
 
     return []
+
+
+def get_qualified_companies(db: Session) -> list[dict]:
+    """Load high-intent leads only (score >= 80)."""
+    return _filter_high_intent_leads(get_all_leads(db))
+
+
+@api_router.get("/dashboard-metrics")
+def api_dashboard_metrics(db: Session = Depends(get_db)):
+    metrics = calculate_dashboard_metrics(get_all_leads(db))
+    return json_success(
+        metrics,
+        meta={
+            "score_fields": [
+                "score",
+                "trust_opportunity_score",
+                "qualification_score",
+                "company_ai_signal",
+                "ai_signal",
+            ],
+            "high_intent_rule": f"score >= {HIGH_INTENT_SCORE_THRESHOLD}",
+        },
+    )
 
 
 @api_router.get("/qualified-companies")
