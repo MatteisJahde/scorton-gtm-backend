@@ -63,7 +63,7 @@ def _sql_for_city(locality: str) -> str:
 def _pdl_record_to_row(record: dict[str, Any], *, display_city: str) -> dict[str, str]:
     employee_count = record.get("employee_count")
     size = str(employee_count) if employee_count is not None else (record.get("size") or "")
-    city = extract_city_from_pdl_record(record, fallback_city=display_city)
+    city = extract_city_from_pdl_record(record) or ""
 
     return {
         "name": (record.get("name") or record.get("display_name") or "").strip(),

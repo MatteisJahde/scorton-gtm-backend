@@ -217,7 +217,7 @@ def format_row_for_reference_csv(row: dict, *, export_id: int) -> dict:
     if website and not website.startswith(("http://", "https://")):
         website = f"https://{website}"
 
-    city = extract_city_from_record(row)
+    city = extract_city_from_record(row) or ""
     city_validated = "TRUE" if city in ORIGINAL_TARGET_CITIES else "FALSE"
 
     def as_int(value: object) -> int:

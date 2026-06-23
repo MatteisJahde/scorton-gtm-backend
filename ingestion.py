@@ -14,7 +14,7 @@ MAX_EMPLOYEE_COUNT = 500
 
 def _passes_filters(company: dict) -> bool:
     city = normalize_city_name(company.get("city") or company.get("locality"))
-    if city not in ALLOWED_CITIES:
+    if not city or city not in ALLOWED_CITIES:
         return False
     if company["industry"] not in ALLOWED_INDUSTRIES:
         return False
@@ -39,6 +39,9 @@ def ingest_companies(db: Session) -> dict:
         company_score = score_company(company)
         slug = "".join(c.lower() for c in company["name"] if c.isalnum())
         city = normalize_city_name(company.get("city") or company.get("locality"))
+        if not city:
+            skipped += 1
+            continue
         employee_count = company["employee_count"]
         company_obj = Company(
             name=company["name"],

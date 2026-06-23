@@ -22,17 +22,17 @@ CITY_ALIASES = {
 }
 
 
-def normalize_city_name(value: object) -> str:
-    """Map raw locality/city strings to canonical display names."""
+def normalize_city_name(value: object) -> Optional[str]:
+    """Map raw locality/city strings to canonical target-city names."""
     text = str(value or "").strip()
     if not text or text.lower() in {"nan", "none", "null"}:
-        return ""
+        return None
     if text in TARGET_CITY_NAMES:
         return text
-    return CITY_ALIASES.get(text.lower(), text)
+    return CITY_ALIASES.get(text.lower())
 
 
-def extract_city_from_record(record: Mapping[str, Any]) -> str:
+def extract_city_from_record(record: Mapping[str, Any]) -> Optional[str]:
     """Read city/locality from a dict-shaped company or lead record."""
     for key in ("city", "locality", "location", "company_city", "hq_city"):
         value = record.get(key)
@@ -50,18 +50,9 @@ def extract_city_from_record(record: Mapping[str, Any]) -> str:
         normalized = normalize_city_name(value)
         if normalized:
             return normalized
-    return ""
+    return None
 
 
-def extract_city_from_pdl_record(
-    record: Mapping[str, Any],
-    *,
-    fallback_city: Optional[str] = None,
-) -> str:
+def extract_city_from_pdl_record(record: Mapping[str, Any]) -> Optional[str]:
     """Extract and normalize city from a raw PDL API company record."""
-    city = extract_city_from_record(record)
-    if city:
-        return city
-    if fallback_city:
-        return normalize_city_name(fallback_city)
-    return ""
+    return extract_city_from_record(record)

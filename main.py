@@ -277,9 +277,9 @@ def _raw_lead_city(lead: dict) -> Optional[str]:
     return city or None
 
 
-def _format_lead_city_display(raw_city: Optional[str]) -> str:
-    """Format city for API output as a string (empty when missing)."""
-    return normalize_city_name(raw_city or "")
+def _format_lead_city_display(raw_city: Optional[str]) -> Optional[str]:
+    """Format city for API output; return null when no specific city is known."""
+    return normalize_city_name(raw_city)
 
 
 def _log_leads_summary_city_debug(leads: list[dict], *, context: str) -> None:
@@ -366,25 +366,34 @@ def calculate_dashboard_metrics(leads: list[dict]) -> dict:
 
 
 def _is_allowed_lead_city(city: Optional[str]) -> bool:
-    normalized = normalize_city_name(city or "")
-    return normalized in ORIGINAL_TARGET_CITIES
+    if not city:
+        return True
+    return city in ORIGINAL_TARGET_CITIES
 
 
 def _serialize_lead_records(df: pd.DataFrame) -> list[dict]:
-    """Serialize dataframe rows and ensure city is always a plain string."""
+    """Serialize dataframe rows; use JSON null when city is unknown."""
     records = df.to_dict(orient="records")
     for record in records:
         city = record.get("city")
         if city is None or (isinstance(city, float) and pd.isna(city)):
-            record["city"] = ""
+            record["city"] = None
         else:
             record["city"] = normalize_city_name(city)
     return records
 
 
 def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
-    """Exclude legacy/non-target cities (e.g. removed Chicago seed rows)."""
-    return [lead for lead in leads if _is_allowed_lead_city(_raw_lead_city(lead))]
+    """Exclude only non-target cities; keep leads with unknown/null city."""
+    filtered: list[dict] = []
+    for lead in leads:
+        city = _raw_lead_city(lead)
+        if city and city not in ORIGINAL_TARGET_CITIES:
+            continue
+        normalized = dict(lead)
+        normalized["city"] = city
+        filtered.append(normalized)
+    return filtered
 
 
 def _load_leads_from_db(db: Session) -> list[dict]:
@@ -408,11 +417,12 @@ def _load_leads_from_db(db: Session) -> list[dict]:
                 "locality": company.locality,
             }
         )
-        if city not in ORIGINAL_TARGET_CITIES:
+        if city and city not in ORIGINAL_TARGET_CITIES:
             continue
         lead = target_account_to_dict(account)
         lead["city"] = city
-        lead["locality"] = city
+        if city:
+            lead["locality"] = city
         leads.append(lead)
     return sort_companies_for_final_cut(leads)
 
