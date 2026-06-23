@@ -268,18 +268,55 @@ def _lead_intent(lead: dict) -> str:
     return HIGH_INTENT_VALUE if _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD else "low"
 
 
+MISSING_CITY_DISPLAY = "—"
+
+
+def _raw_lead_city(lead: dict) -> Optional[str]:
+    """Read city from a lead record without applying location defaults."""
+    for key in ("city", "location", "company_city", "hq_city"):
+        value = lead.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text and text.lower() not in {"nan", "none", "null"}:
+            return text
+    return None
+
+
+def _format_lead_city_display(raw_city: Optional[str]) -> str:
+    """Format city for API output; never substitute a fallback like Chicago."""
+    if raw_city is None:
+        return MISSING_CITY_DISPLAY
+    text = str(raw_city).strip()
+    if not text or text.lower() in {"nan", "none", "null"}:
+        return MISSING_CITY_DISPLAY
+    return text
+
+
+def _log_leads_summary_city_debug(leads: list[dict], *, context: str) -> None:
+    """Print unique city values to help debug location column mapping."""
+    raw_cities = [_raw_lead_city(lead) for lead in leads]
+    unique = sorted({city for city in raw_cities if city}, key=str.lower)
+    missing = sum(1 for city in raw_cities if not city)
+    counts = Counter(city or "(empty)" for city in raw_cities)
+    print(f"[leads-summary] {context}: {len(unique)} unique non-empty city values: {unique}")
+    print(f"[leads-summary] {context}: {missing} leads with missing/empty city (of {len(leads)} total)")
+    print(f"[leads-summary] {context}: city value counts: {dict(sorted(counts.items()))}")
+
+
 def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
     """Convert lead records to a dataframe with CSV-aligned column names."""
     records = []
     for lead in leads:
         company = str(lead.get("company") or lead.get("company_name") or "").strip()
+        raw_city = _raw_lead_city(lead)
         records.append(
             {
                 "id": lead.get("id"),
                 "company": company,
                 "company_website": lead.get("company_website") or lead.get("website"),
                 "industry": lead.get("industry"),
-                "city": lead.get("city"),
+                "city": _format_lead_city_display(raw_city),
                 "intent": _lead_intent(lead),
                 LEADS_SUMMARY_SCORE_FIELD: _lead_score(lead),
                 "buyer_name": lead.get("buyer_name"),
@@ -296,6 +333,8 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
         return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
 
     unique_leads, _report = deduplicate_company_records(leads, label="leads_summary")
+    _log_leads_summary_city_debug(unique_leads, context="all deduplicated leads")
+
     df = _leads_to_dataframe(unique_leads)
     total_leads = len(df)
 
@@ -305,6 +344,22 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
         ascending=False,
     )
     top_100_leads = high_intent_df.head(top_n)
+
+    high_intent_source = sorted(
+        (lead for lead in unique_leads if _lead_intent(lead) == HIGH_INTENT_VALUE),
+        key=_lead_score,
+        reverse=True,
+    )[:top_n]
+    _log_leads_summary_city_debug(
+        high_intent_source,
+        context=f"top {len(high_intent_source)} high-intent leads (raw source values)",
+    )
+
+    # Temporary debug: verify city diversity before serializing the API response.
+    print(df["city"].unique())
+    top_100_leads = top_100_leads.copy()
+    top_100_leads["city"] = top_100_leads["city"].fillna(MISSING_CITY_DISPLAY)
+    print(top_100_leads["city"].unique())
 
     return {
         "total_leads": total_leads,
