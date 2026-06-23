@@ -31,6 +31,8 @@ from dataset_builder import (
     export_dataset_csv,
     export_target_dataset_csv,
     export_target_dataset_xlsx,
+    is_placeholder_company,
+    ORIGINAL_TARGET_CITIES,
     target_account_to_dict,
 )
 from deduplication import deduplicate_company_records
@@ -268,9 +270,6 @@ def _lead_intent(lead: dict) -> str:
     return HIGH_INTENT_VALUE if _lead_score(lead) >= HIGH_INTENT_SCORE_THRESHOLD else "low"
 
 
-MISSING_CITY_DISPLAY = "—"
-
-
 def _raw_lead_city(lead: dict) -> Optional[str]:
     """Read city from a lead record without applying location defaults."""
     for key in ("city", "location", "company_city", "hq_city"):
@@ -283,13 +282,13 @@ def _raw_lead_city(lead: dict) -> Optional[str]:
     return None
 
 
-def _format_lead_city_display(raw_city: Optional[str]) -> str:
-    """Format city for API output; never substitute a fallback like Chicago."""
+def _format_lead_city_display(raw_city: Optional[str]) -> Optional[str]:
+    """Format city for API output; return null when source data is missing."""
     if raw_city is None:
-        return MISSING_CITY_DISPLAY
+        return None
     text = str(raw_city).strip()
     if not text or text.lower() in {"nan", "none", "null"}:
-        return MISSING_CITY_DISPLAY
+        return None
     return text
 
 
@@ -358,8 +357,6 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
     # Temporary debug: verify city diversity before serializing the API response.
     print(df["city"].unique())
     top_100_leads = top_100_leads.copy()
-    top_100_leads["city"] = top_100_leads["city"].fillna(MISSING_CITY_DISPLAY)
-    print(top_100_leads["city"].unique())
 
     return {
         "total_leads": total_leads,
@@ -378,9 +375,19 @@ def calculate_dashboard_metrics(leads: list[dict]) -> dict:
     }
 
 
+def _is_allowed_lead_city(city: Optional[str]) -> bool:
+    return bool(city) and city in ORIGINAL_TARGET_CITIES
+
+
+def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
+    """Exclude legacy/non-target cities (e.g. removed Chicago seed rows)."""
+    return [lead for lead in leads if _is_allowed_lead_city(_raw_lead_city(lead))]
+
+
 def _load_leads_from_db(db: Session) -> list[dict]:
     rows = (
         db.query(TargetAccount)
+        .filter(TargetAccount.city.in_(ORIGINAL_TARGET_CITIES))
         .order_by(
             TargetAccount.trust_opportunity_score.desc(),
             TargetAccount.icp_score.desc(),
@@ -389,7 +396,11 @@ def _load_leads_from_db(db: Session) -> list[dict]:
         .all()
     )
     return sort_companies_for_final_cut(
-        [target_account_to_dict(account) for account in rows]
+        [
+            target_account_to_dict(account)
+            for account in rows
+            if not is_placeholder_company(account.company_name)
+        ]
     )
 
 
@@ -415,6 +426,7 @@ def get_all_leads(db: Session) -> list[dict]:
         else:
             leads = []
 
+        leads = _filter_allowed_leads(leads)
         unique_leads, _report = deduplicate_company_records(leads, label="api_leads")
         return unique_leads
     except Exception as exc:

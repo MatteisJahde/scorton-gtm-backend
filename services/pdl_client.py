@@ -12,7 +12,6 @@ PDL_SEARCH_URL = "https://api.peopledatalabs.com/v5/company/search"
 
 # Display name -> PDL SQL locality value
 TARGET_CITIES = (
-    ("Chicago", "chicago"),
     ("New York", "new york"),
     ("San Francisco", "san francisco"),
     ("Charlotte", "charlotte"),

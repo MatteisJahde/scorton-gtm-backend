@@ -14,7 +14,6 @@ EXPORT_CACHE = ROOT / "data" / "export-target-dataset.csv"
 PDL_CSV = ROOT / "data" / "pdl_companies_sample.csv"
 
 GENERATE_COUNT = 6500
-CHICAGO_LOOKALIKES = 400
 
 CACHE_GLOBS = (
     ROOT / "companies.db",
@@ -54,8 +53,6 @@ def seed_fresh_companies() -> None:
         str(ROOT / "scripts" / "seed_pdl_csv.py"),
         "--generate",
         str(GENERATE_COUNT),
-        "--chicago-lookalikes",
-        str(CHICAGO_LOOKALIKES),
         "--refresh-seeds",
     ]
     print("running:", " ".join(command))
@@ -71,7 +68,6 @@ def ingest_and_export() -> dict:
 
     from database import Base, SessionLocal, engine
     from dataset_builder import (
-        CHICAGO_TARGET_ACCOUNTS,
         MAX_TARGET_ACCOUNTS,
         build_target_dataset,
         deduplicate_target_dataset_csv,
@@ -114,11 +110,9 @@ def ingest_and_export() -> dict:
             "output_csv": str(MASTER_CSV_PATH.resolve()),
             "total_rows": row_count,
             "parsed_rows": len(rows),
-            "chicago_rows": city_counts.get("Chicago", 0),
             "city_counts": dict(city_counts),
             "targets": {
                 "total": MAX_TARGET_ACCOUNTS,
-                "chicago": CHICAGO_TARGET_ACCOUNTS,
                 "city_quotas": dict(CITY_TARGET_QUOTAS),
             },
         }

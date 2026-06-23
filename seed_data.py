@@ -1,32 +1,5 @@
 # Simulated People Data Labs company dataset
 
-# 20 high-quality Chicago anchors: Fintech, Insurance, and Data/Security firms.
-CHICAGO_SEED_COMPANIES = [
-    # Fintech / Financial Services
-    {"name": "Northern Trust", "industry": "Financial Services", "city": "Chicago", "employee_count": 95},
-    {"name": "Morningstar", "industry": "Financial Services", "city": "Chicago", "employee_count": 450},
-    {"name": "CME Group", "industry": "Financial Services", "city": "Chicago", "employee_count": 380},
-    {"name": "TransUnion", "industry": "Financial Services", "city": "Chicago", "employee_count": 420},
-    {"name": "William Blair", "industry": "Financial Services", "city": "Chicago", "employee_count": 175},
-    {"name": "Envestnet", "industry": "Financial Services", "city": "Chicago", "employee_count": 480},
-    {"name": "M1 Finance", "industry": "Financial Services", "city": "Chicago", "employee_count": 350},
-    {"name": "Braintree", "industry": "Financial Services", "city": "Chicago", "employee_count": 140},
-    {"name": "Akuna Capital", "industry": "Financial Services", "city": "Chicago", "employee_count": 75},
-    # Insurance
-    {"name": "Old Republic International", "industry": "Insurance", "city": "Chicago", "employee_count": 210},
-    {"name": "Progressive", "industry": "Insurance", "city": "Chicago", "employee_count": 120},
-    {"name": "CNA Financial", "industry": "Insurance", "city": "Chicago", "employee_count": 400},
-    {"name": "HUB International", "industry": "Insurance", "city": "Chicago", "employee_count": 280},
-    {"name": "Zurich North America", "industry": "Insurance", "city": "Chicago", "employee_count": 190},
-    {"name": "Country Financial", "industry": "Insurance", "city": "Chicago", "employee_count": 95},
-    {"name": "AccuQuote", "industry": "Insurance", "city": "Chicago", "employee_count": 45},
-    # Data / Security (mapped to qualifying GTM industries)
-    {"name": "Relativity", "industry": "Financial Services", "city": "Chicago", "employee_count": 150},
-    {"name": "Trustwave", "industry": "Financial Services", "city": "Chicago", "employee_count": 320},
-    {"name": "Keeper Security", "industry": "Financial Services", "city": "Chicago", "employee_count": 185},
-    {"name": "Jellyvision", "industry": "Accounting", "city": "Chicago", "employee_count": 260},
-]
-
 _BASE_COMPANIES = [
     # Passes all filters (city, industry, employee_count 20–500)
     {"name": "Apex Capital Partners", "industry": "Financial Services", "city": "New York", "employee_count": 120},
@@ -54,7 +27,7 @@ _BASE_COMPANIES = [
     {"name": "Charlotte Ledger Works", "industry": "Accounting", "city": "Charlotte", "employee_count": 90},
     {"name": "Miami Trust Advisors", "industry": "Financial Services", "city": "Miami", "employee_count": 42},
     {"name": "Bayfront Actuaries", "industry": "Insurance", "city": "Miami", "employee_count": 220},
-] + CHICAGO_SEED_COMPANIES + [
+] + [
     # Fails employee_count filter (too low)
     {"name": "Tiny Brokerage", "industry": "Financial Services", "city": "New York", "employee_count": 12},
     {"name": "Solo Actuary LLC", "industry": "Insurance", "city": "Miami", "employee_count": 8},

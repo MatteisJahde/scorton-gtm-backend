@@ -21,7 +21,6 @@ sys.path.insert(0, str(ROOT))
 from database import Base, SessionLocal, engine  # noqa: E402
 from migrations import migrate_db  # noqa: E402
 from models import Company  # noqa: E402
-from seed_data import CHICAGO_SEED_COMPANIES  # noqa: E402
 from services.pdl_client import PDLAPIError, fetch_companies_from_pdl, require_pdl_api_key
 from sorting_agent import ALLOWED_CITIES  # noqa: E402
 
@@ -83,7 +82,7 @@ def seed_to_pdl_row(company: dict) -> dict:
     }
 
 
-SEED_COMPANIES = [seed_to_pdl_row(company) for company in CHICAGO_SEED_COMPANIES]
+SEED_COMPANIES: list[dict] = []
 
 
 def write_pdl_rows_csv(path: Path, rows: list[dict]) -> None:
@@ -230,7 +229,7 @@ def main() -> None:
     parser.add_argument(
         "--refresh-seeds",
         action="store_true",
-        help="Upsert major Chicago seed companies before loading the CSV",
+        help="Upsert optional seed companies before loading the CSV",
     )
     parser.add_argument(
         "--refresh",

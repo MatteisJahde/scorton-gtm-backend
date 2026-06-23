@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-ALLOWED_CITIES = frozenset({"New York", "San Francisco", "Charlotte", "Miami", "Chicago"})
+ALLOWED_CITIES = frozenset({"New York", "San Francisco", "Charlotte", "Miami"})
 
 # Per-city target account quotas (must sum to MAX_TARGET_ACCOUNTS).
 CITY_TARGET_QUOTAS = {
@@ -12,22 +12,17 @@ CITY_TARGET_QUOTAS = {
     "San Francisco": 300,
     "Charlotte": 200,
     "Miami": 100,
-    "Chicago": 100,
 }
 MAX_TARGET_ACCOUNTS = sum(CITY_TARGET_QUOTAS.values())
 
-# Backward-compatible aliases used by reporting and validation.
-CHICAGO_TARGET_ACCOUNTS = CITY_TARGET_QUOTAS["Chicago"]
-
 # Tier-1 hubs — equal weight in ranking and enrichment bonuses.
-TIER_ONE_CITIES = frozenset({"New York", "San Francisco", "Chicago"})
+TIER_ONE_CITIES = frozenset({"New York", "San Francisco"})
 TIER_TWO_CITIES = frozenset(ALLOWED_CITIES - TIER_ONE_CITIES)
 
 # Shared city weights used by scoring, enrichment, and export ranking.
 CITY_RANK_WEIGHTS = {
     "New York": 15,
     "San Francisco": 15,
-    "Chicago": 15,
     "Charlotte": 10,
     "Miami": 10,
 }
@@ -116,11 +111,8 @@ def select_balanced_leads(
     leads: Iterable[dict[str, Any]],
     *,
     total_limit: int,
-    chicago_limit: int,
+    chicago_limit: int | None = None,
 ) -> list[dict[str, Any]]:
-    """Preserve a Chicago quota while ranking the remainder across all cities."""
+    """Return the top-ranked leads up to total_limit."""
     ranked = sort_companies_for_final_cut(leads)
-    chicago = [lead for lead in ranked if _company_city(lead) == "Chicago"][:chicago_limit]
-    chicago_names = {_company_name(lead) for lead in chicago}
-    remaining = [lead for lead in ranked if _company_name(lead) not in chicago_names]
-    return (chicago + remaining)[:total_limit]
+    return ranked[:total_limit]
