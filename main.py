@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
+from city_utils import extract_city_from_record, normalize_city_name
 from database import Base, engine, get_db
 from migrations import migrate_db
 from settings import (
@@ -272,24 +273,13 @@ def _lead_intent(lead: dict) -> str:
 
 def _raw_lead_city(lead: dict) -> Optional[str]:
     """Read city from a lead record without applying location defaults."""
-    for key in ("city", "location", "company_city", "hq_city"):
-        value = lead.get(key)
-        if value is None:
-            continue
-        text = str(value).strip()
-        if text and text.lower() not in {"nan", "none", "null"}:
-            return text
-    return None
+    city = extract_city_from_record(lead)
+    return city or None
 
 
-def _format_lead_city_display(raw_city: Optional[str]) -> Optional[str]:
-    """Format city for API output; return null when source data is missing."""
-    if raw_city is None:
-        return None
-    text = str(raw_city).strip()
-    if not text or text.lower() in {"nan", "none", "null"}:
-        return None
-    return text
+def _format_lead_city_display(raw_city: Optional[str]) -> str:
+    """Format city for API output as a string (empty when missing)."""
+    return normalize_city_name(raw_city or "")
 
 
 def _log_leads_summary_city_debug(leads: list[dict], *, context: str) -> None:
@@ -361,7 +351,7 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
     return {
         "total_leads": total_leads,
         "high_intent_leads": len(high_intent_df),
-        "top_leads": top_100_leads.to_dict(orient="records"),
+        "top_leads": _serialize_lead_records(top_100_leads),
     }
 
 
@@ -376,7 +366,20 @@ def calculate_dashboard_metrics(leads: list[dict]) -> dict:
 
 
 def _is_allowed_lead_city(city: Optional[str]) -> bool:
-    return bool(city) and city in ORIGINAL_TARGET_CITIES
+    normalized = normalize_city_name(city or "")
+    return normalized in ORIGINAL_TARGET_CITIES
+
+
+def _serialize_lead_records(df: pd.DataFrame) -> list[dict]:
+    """Serialize dataframe rows and ensure city is always a plain string."""
+    records = df.to_dict(orient="records")
+    for record in records:
+        city = record.get("city")
+        if city is None or (isinstance(city, float) and pd.isna(city)):
+            record["city"] = ""
+        else:
+            record["city"] = normalize_city_name(city)
+    return records
 
 
 def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
@@ -386,8 +389,8 @@ def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
 
 def _load_leads_from_db(db: Session) -> list[dict]:
     rows = (
-        db.query(TargetAccount)
-        .filter(TargetAccount.city.in_(ORIGINAL_TARGET_CITIES))
+        db.query(TargetAccount, Company)
+        .join(Company, TargetAccount.company_id == Company.id)
         .order_by(
             TargetAccount.trust_opportunity_score.desc(),
             TargetAccount.icp_score.desc(),
@@ -395,13 +398,23 @@ def _load_leads_from_db(db: Session) -> list[dict]:
         )
         .all()
     )
-    return sort_companies_for_final_cut(
-        [
-            target_account_to_dict(account)
-            for account in rows
-            if not is_placeholder_company(account.company_name)
-        ]
-    )
+    leads: list[dict] = []
+    for account, company in rows:
+        if is_placeholder_company(account.company_name):
+            continue
+        city = extract_city_from_record(
+            {
+                "city": account.city,
+                "locality": company.locality,
+            }
+        )
+        if city not in ORIGINAL_TARGET_CITIES:
+            continue
+        lead = target_account_to_dict(account)
+        lead["city"] = city
+        lead["locality"] = city
+        leads.append(lead)
+    return sort_companies_for_final_cut(leads)
 
 
 def get_all_leads(db: Session) -> list[dict]:

@@ -23,6 +23,7 @@ from migrations import migrate_db  # noqa: E402
 from models import Company  # noqa: E402
 from services.pdl_client import PDLAPIError, fetch_companies_from_pdl, require_pdl_api_key
 from sorting_agent import ALLOWED_CITIES  # noqa: E402
+from city_utils import normalize_city_name
 
 DEFAULT_CSV = ROOT / "data" / "pdl_companies_sample.csv"
 DEFAULT_GENERATE_COUNT = 6500
@@ -113,7 +114,8 @@ def fetch_pdl_csv(path: Path, count: Optional[int]) -> None:
 
 def row_to_company(row: dict) -> Company:
     name = (row.get("name") or "").strip()
-    locality = (row.get("locality") or row.get("city") or "").strip() or None
+    city = normalize_city_name(row.get("locality") or row.get("city"))
+    locality = city or None
     size = (row.get("size") or "").strip() or None
     employee_count = size_to_employee_count(size or "")
     industry = normalize_industry(row.get("industry") or "unknown")
@@ -134,7 +136,8 @@ def row_to_company(row: dict) -> Company:
 
 
 def apply_row_to_company(company: Company, row: dict) -> None:
-    locality = (row.get("locality") or row.get("city") or "").strip() or None
+    city = normalize_city_name(row.get("locality") or row.get("city"))
+    locality = city or None
     size = (row.get("size") or "").strip() or None
     company.website = (row.get("website") or "").strip() or company.website
     company.industry = normalize_industry(row.get("industry") or company.industry)

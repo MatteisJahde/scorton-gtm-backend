@@ -8,6 +8,8 @@ from typing import Any, Optional
 
 import requests
 
+from city_utils import extract_city_from_pdl_record
+
 PDL_SEARCH_URL = "https://api.peopledatalabs.com/v5/company/search"
 
 # Display name -> PDL SQL locality value
@@ -61,13 +63,15 @@ def _sql_for_city(locality: str) -> str:
 def _pdl_record_to_row(record: dict[str, Any], *, display_city: str) -> dict[str, str]:
     employee_count = record.get("employee_count")
     size = str(employee_count) if employee_count is not None else (record.get("size") or "")
+    city = extract_city_from_pdl_record(record, fallback_city=display_city)
 
     return {
         "name": (record.get("name") or record.get("display_name") or "").strip(),
         "website": (record.get("website") or "").strip(),
         "industry": (record.get("industry") or "unknown").strip(),
         "size": size,
-        "locality": display_city,
+        "city": city,
+        "locality": city,
         "country": "united states",
         "linkedin_url": (record.get("linkedin_url") or "").strip(),
     }

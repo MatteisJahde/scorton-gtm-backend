@@ -11,6 +11,7 @@ from typing import Any, Dict
 from config.personas import pick_executive_title
 from models import Company
 from scoring import score_company
+from city_utils import extract_city_from_record, normalize_city_name
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
 from services.verifier import verify_and_resolve_work_email
 
@@ -249,7 +250,13 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     hubspot = mock_hubspot_signals(domain, company)
     financials = mock_company_financials(company)
 
-    city_validated = company.city in ALLOWED_CITIES
+    city = extract_city_from_record(
+        {
+            "city": company.city,
+            "locality": company.locality,
+        }
+    )
+    city_validated = city in ALLOWED_CITIES
     employee_count = company.employee_count or 0
     ai_signal = calculate_ai_signal(company.industry, employee_count)
     risk_signal = calculate_risk_signal(company.industry, employee_count)
@@ -274,7 +281,7 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "company_name": company.name,
         "website": website,
         "industry": apollo["industry"],
-        "city": company.city,
+        "city": city,
         "employee_count": apollo["employee_count"],
         "funding": apollo.get("funding") or financials["funding"],
         "revenue": apollo.get("revenue") or financials["revenue"],

@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 
-from sorting_agent import ALLOWED_CITIES
+from city_utils import extract_city_from_record, normalize_city_name
 from models import Company, Contact
 from scoring import priority_tier, score_company
 from seed_data import COMPANIES
+from sorting_agent import ALLOWED_CITIES
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
 
 ALLOWED_INDUSTRIES = {"Financial Services", "Insurance", "Accounting"}
@@ -12,7 +13,8 @@ MAX_EMPLOYEE_COUNT = 500
 
 
 def _passes_filters(company: dict) -> bool:
-    if company["city"] not in ALLOWED_CITIES:
+    city = normalize_city_name(company.get("city") or company.get("locality"))
+    if city not in ALLOWED_CITIES:
         return False
     if company["industry"] not in ALLOWED_INDUSTRIES:
         return False
@@ -36,7 +38,7 @@ def ingest_companies(db: Session) -> dict:
             continue
         company_score = score_company(company)
         slug = "".join(c.lower() for c in company["name"] if c.isalnum())
-        city = company["city"]
+        city = normalize_city_name(company.get("city") or company.get("locality"))
         employee_count = company["employee_count"]
         company_obj = Company(
             name=company["name"],

@@ -13,6 +13,7 @@ from ingestion import (
     _passes_filters,
 )
 from models import Company, Contact, TargetAccount
+from city_utils import extract_city_from_record, normalize_city_name
 from deduplication import (
     company_identity_key,
     deduplicate_company_records,
@@ -171,6 +172,12 @@ def _buyer_lookup(db, company_name: str) -> Tuple[str, str]:
 
 
 def target_account_to_dict(account: TargetAccount) -> dict:
+    city = extract_city_from_record(
+        {
+            "city": account.city,
+            "locality": getattr(account, "locality", None),
+        }
+    )
     return {
         "id": account.id,
         "company_id": account.company_id,
@@ -178,7 +185,7 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "website": account.website,
         "company_website": account.website,
         "industry": account.industry,
-        "city": account.city,
+        "city": city,
         "city_validated": account.city_validated,
         "employee_count": account.employee_count,
         "funding": account.funding,
@@ -210,7 +217,7 @@ def format_row_for_reference_csv(row: dict, *, export_id: int) -> dict:
     if website and not website.startswith(("http://", "https://")):
         website = f"https://{website}"
 
-    city = str(row.get("city") or "").strip()
+    city = extract_city_from_record(row)
     city_validated = "TRUE" if city in ORIGINAL_TARGET_CITIES else "FALSE"
 
     def as_int(value: object) -> int:
@@ -254,6 +261,7 @@ def expand_reference_csv_row(row: dict) -> dict:
     expanded.setdefault("company_name", row.get("company"))
     expanded.setdefault("ai_signal", row.get("company_ai_signal"))
     expanded.setdefault("funding", row.get("funding_status"))
+    expanded["city"] = extract_city_from_record(row)
     expanded["city_validated"] = row.get("city_validated") == "TRUE"
     return expanded
 
