@@ -1,4 +1,9 @@
-"""People Data Labs Company Search API client."""
+"""
+People Data Labs Company Search API client.
+
+DEPRECATED: The production pipeline no longer calls PDL. Use actual_companies.csv
+via seed_data.load_actual_companies() instead.
+"""
 
 from __future__ import annotations
 

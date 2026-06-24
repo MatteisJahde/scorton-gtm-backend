@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
-from city_utils import extract_city_from_record, normalize_city_name
+from city_utils import normalize_city_name
 from models import Company, Contact
 from scoring import priority_tier, score_company
-from seed_data import COMPANIES
+from seed_data import actual_companies_available, get_companies, is_synthetic_company_name
 from sorting_agent import ALLOWED_CITIES
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
 
@@ -13,6 +13,8 @@ MAX_EMPLOYEE_COUNT = 500
 
 
 def _passes_filters(company: dict) -> bool:
+    if is_synthetic_company_name(company.get("name", "")):
+        return False
     city = normalize_city_name(company.get("city") or company.get("locality"))
     if not city or city not in ALLOWED_CITIES:
         return False
@@ -25,32 +27,53 @@ def _passes_filters(company: dict) -> bool:
 
 
 def ingest_companies(db: Session) -> dict:
+    if not actual_companies_available():
+        return {
+            "inserted": 0,
+            "skipped": 0,
+            "error": f"Missing CSV file: actual_companies.csv (expected in project root)",
+            "source": "actual_companies.csv",
+        }
+
+    companies = get_companies()
+    if not companies:
+        return {
+            "inserted": 0,
+            "skipped": 0,
+            "error": "actual_companies.csv contains no valid company rows",
+            "source": "actual_companies.csv",
+        }
+
     existing_names = {name for (name,) in db.query(Company.name).all()}
     inserted = 0
     skipped = 0
 
-    for company in COMPANIES:
+    for company in companies:
         if not _passes_filters(company):
             skipped += 1
             continue
         if company["name"] in existing_names:
             skipped += 1
             continue
+
         company_score = score_company(company)
-        slug = "".join(c.lower() for c in company["name"] if c.isalnum())
         city = normalize_city_name(company.get("city") or company.get("locality"))
         if not city:
             skipped += 1
             continue
-        employee_count = company["employee_count"]
+
+        employee_count = company.get("employee_count")
+        website = company.get("website") or ""
+        linkedin_url = company.get("linkedin_url")
+
         company_obj = Company(
             name=company["name"],
-            website=f"https://www.{slug}.com",
+            website=website or None,
             industry=company["industry"],
-            size=str(employee_count),
+            size=str(employee_count) if employee_count is not None else None,
             locality=city,
             country="united states",
-            linkedin_url=f"https://linkedin.com/company/{slug}",
+            linkedin_url=linkedin_url,
             is_targeted=False,
             week_assigned=None,
             city=city,
@@ -69,4 +92,9 @@ def ingest_companies(db: Session) -> dict:
         inserted += 1
 
     db.commit()
-    return {"inserted": inserted, "skipped": skipped}
+    return {
+        "inserted": inserted,
+        "skipped": skipped,
+        "source": "actual_companies.csv",
+        "total_rows_in_csv": len(companies),
+    }

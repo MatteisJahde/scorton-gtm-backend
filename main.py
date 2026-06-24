@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
 from city_utils import extract_city_from_record, normalize_city_name
-from database import Base, engine, get_db
+from database import Base, SessionLocal, engine, get_db
 from migrations import migrate_db
 from settings import (
     API_BASE_URL,
@@ -39,6 +39,7 @@ from dataset_builder import (
 from deduplication import deduplicate_company_records
 from ingestion import ingest_companies
 from models import Company, Contact, TargetAccount
+from seed_data import ACTUAL_COMPANIES_CSV, actual_companies_available, get_companies
 from services.weekly_batch import pull_weekly_batch
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
@@ -162,6 +163,32 @@ def _contact_to_dict(contact: Contact) -> dict:
 def on_startup():
     Base.metadata.create_all(bind=engine)
     migrate_db()
+    _bootstrap_from_actual_companies_csv()
+
+
+def _bootstrap_from_actual_companies_csv() -> None:
+    """Load real companies from actual_companies.csv when the dashboard DB is empty."""
+    if not actual_companies_available():
+        print(f"Startup: {ACTUAL_COMPANIES_CSV.name} not found; skipping auto-ingest.")
+        return
+
+    db = SessionLocal()
+    try:
+        has_target_accounts = db.query(TargetAccount.id).first() is not None
+        if has_target_accounts:
+            return
+
+        print(f"Startup: loading companies from {ACTUAL_COMPANIES_CSV.name}")
+        ingest_result = ingest_companies(db)
+        build_result = build_target_dataset(db)
+        print(
+            {
+                "startup_ingest": ingest_result,
+                "startup_build_target_dataset": build_result,
+            }
+        )
+    finally:
+        db.close()
 
 
 @app.get("/health")
@@ -568,7 +595,52 @@ def contacts_by_company(company_id: int, db: Session = Depends(get_db)):
 
 @app.post("/ingest")
 def ingest(db: Session = Depends(get_db)):
-    return ingest_companies(db)
+    """Ingest companies from actual_companies.csv in the project root."""
+    result = ingest_companies(db)
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@api_router.post("/ingest")
+def api_ingest(db: Session = Depends(get_db)):
+    return ingest(db)
+
+
+@api_router.post("/reload-from-csv")
+def api_reload_from_csv(db: Session = Depends(get_db)):
+    """Re-ingest actual_companies.csv and rebuild the target dataset."""
+    if not actual_companies_available():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": f"Missing {ACTUAL_COMPANIES_CSV.name} in project root",
+                "expected_columns": [
+                    "Company",
+                    "Website",
+                    "Industry",
+                    "City",
+                    "Employee Count",
+                ],
+            },
+        )
+
+    db.query(TargetAccount).delete()
+    db.query(Contact).delete()
+    db.query(Company).delete()
+    db.commit()
+
+    ingest_result = ingest_companies(db)
+    if ingest_result.get("error"):
+        raise HTTPException(status_code=400, detail=ingest_result)
+
+    build_result = build_target_dataset(db)
+    return {
+        "source": str(ACTUAL_COMPANIES_CSV),
+        "csv_rows": len(get_companies()),
+        "ingest": ingest_result,
+        "build_target_dataset": build_result,
+    }
 
 
 app.include_router(api_router)

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 
@@ -13,12 +12,9 @@ DB_PATH = ROOT / "companies.db"
 EXPORT_CACHE = ROOT / "data" / "export-target-dataset.csv"
 PDL_CSV = ROOT / "data" / "pdl_companies_sample.csv"
 
-GENERATE_COUNT = 6500
-
 CACHE_GLOBS = (
     ROOT / "companies.db",
     ROOT / "data" / "*.csv",
-    ROOT / "*.csv",
 )
 
 
@@ -48,15 +44,12 @@ def write_master_csv(csv_content: str) -> int:
 
 
 def seed_fresh_companies() -> None:
-    command = [
-        sys.executable,
-        str(ROOT / "scripts" / "seed_pdl_csv.py"),
-        "--generate",
-        str(GENERATE_COUNT),
-        "--refresh-seeds",
-    ]
-    print("running:", " ".join(command))
-    subprocess.run(command, cwd=ROOT, check=True)
+    csv_path = ROOT / "actual_companies.csv"
+    if not csv_path.exists():
+        raise FileNotFoundError(
+            f"Missing {csv_path.name}. Add your real company CSV to the project root."
+        )
+    print(f"Using static CSV source: {csv_path.resolve()}")
 
 
 def ingest_and_export() -> dict:

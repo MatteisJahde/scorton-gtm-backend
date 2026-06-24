@@ -18,7 +18,7 @@ from deduplication import (
     company_identity_key,
     deduplicate_company_records,
 )
-from seed_data import COMPANIES
+from seed_data import get_companies
 from services.enrichment import enrich_company
 from sorting_agent import sort_companies_for_final_cut
 
@@ -398,7 +398,7 @@ def enrich_target_dataset(db: Session) -> dict:
 
 
 def build_dataset(db=None) -> List[dict]:
-    filtered = [company for company in COMPANIES if _passes_filters(company)]
+    filtered = [company for company in get_companies() if _passes_filters(company)]
     selected = filtered[:TARGET_COUNT]
 
     return [_build_row(company, index, db) for index, company in enumerate(selected)]
