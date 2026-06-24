@@ -14,6 +14,8 @@ from models import Company
 from scoring import score_company
 from seed_data import get_company_csv_extras
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
+from services.email_verification import preverified_email_result
+from services.lead_validation import LEAD_STATUS_VERIFIED
 from services.verifier import verify_and_resolve_work_email
 
 BUYER_FIRST_NAMES = [
@@ -273,12 +275,23 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     job_title = csv_extras.get("job_title") or linkedin_buyer["job_title"]
     primary_email = csv_extras.get("work_email") or linkedin_buyer["work_email"]
 
-    email_result = verify_and_resolve_work_email(
-        primary_email=primary_email,
-        buyer_name=buyer_name,
-        domain=domain,
-        seed=_seed(company),
-    )
+    lead_verification_status = csv_extras.get("lead_verification_status")
+    if lead_verification_status == LEAD_STATUS_VERIFIED and csv_extras.get("work_email"):
+        email_result = preverified_email_result(
+            csv_extras["work_email"],
+            str(csv_extras.get("verification_status") or ""),
+            email_status=csv_extras.get("email_status"),
+        )
+    else:
+        email_result = verify_and_resolve_work_email(
+            primary_email=primary_email,
+            buyer_name=buyer_name,
+            domain=domain,
+            seed=_seed(company),
+        )
+        lead_verification_status = (
+            LEAD_STATUS_VERIFIED if email_result.get("qualified") else "Unverified"
+        )
 
     notes = _generate_notes(company.industry, ai_signal, risk_signal, _seed(company) + index)
     if email_result.get("notes_flag"):
@@ -301,6 +314,10 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "job_title": job_title,
         "work_email": email_result["work_email"],
         "email_status": email_result["email_status"],
+        "lead_verification_status": lead_verification_status,
+        "verification_status": csv_extras.get("verification_status")
+        or email_result.get("verification_status"),
+        "contact_verification_status": csv_extras.get("contact_verification_status"),
         "linkedin_url": linkedin_buyer["buyer_linkedin_url"],
         "company_linkedin_url": linkedin_co["company_linkedin_url"],
         "ai_signal": ai_signal,

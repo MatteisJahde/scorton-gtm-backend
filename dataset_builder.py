@@ -20,6 +20,7 @@ from deduplication import (
 )
 from seed_data import get_companies
 from services.enrichment import enrich_company
+from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
 
 TARGET_COUNT = 25
@@ -57,6 +58,9 @@ REFERENCE_CSV_COLUMNS = [
     "job_title",
     "work_email",
     "email_status",
+    "lead_verification_status",
+    "verification_status",
+    "contact_verification_status",
     "linkedin_url",
     "company_ai_signal",
     "risk_signal",
@@ -198,6 +202,9 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "job_title": account.job_title,
         "work_email": account.work_email,
         "email_status": account.email_status,
+        "lead_verification_status": account.lead_verification_status,
+        "verification_status": account.verification_status,
+        "contact_verification_status": account.contact_verification_status,
         "linkedin_url": account.linkedin_url,
         "company_linkedin_url": account.company_linkedin_url,
         "ai_signal": account.ai_signal,
@@ -242,6 +249,9 @@ def format_row_for_reference_csv(row: dict, *, export_id: int) -> dict:
         "job_title": str(row.get("job_title") or "").strip(),
         "work_email": str(row.get("work_email") or "").strip(),
         "email_status": str(row.get("email_status") or "").strip(),
+        "lead_verification_status": str(row.get("lead_verification_status") or "").strip(),
+        "verification_status": str(row.get("verification_status") or "").strip(),
+        "contact_verification_status": str(row.get("contact_verification_status") or "").strip(),
         "linkedin_url": str(row.get("linkedin_url") or "").strip(),
         "company_ai_signal": as_int(row.get("company_ai_signal") or row.get("ai_signal")),
         "risk_signal": as_int(row.get("risk_signal")),
@@ -331,8 +341,13 @@ def build_target_dataset(db: Session) -> dict:
     db.flush()
 
     enriched_records: List[dict] = []
+    unverified_excluded = 0
     for index, company in enumerate(companies):
-        enriched_records.append(enrich_company(company, index))
+        enriched = enrich_company(company, index)
+        if enriched.get("lead_verification_status") != LEAD_STATUS_VERIFIED:
+            unverified_excluded += 1
+            continue
+        enriched_records.append(enriched)
 
     deduped_records, dedupe_report = deduplicate_company_records(
         enriched_records,
@@ -341,7 +356,7 @@ def build_target_dataset(db: Session) -> dict:
     )
 
     inserted = 0
-    skipped = len(enriched_records) - len(deduped_records)
+    skipped = (len(companies) - len(enriched_records)) + (len(enriched_records) - len(deduped_records))
     seen_identities: set[tuple[str, str]] = set()
 
     for enriched in deduped_records:
@@ -359,12 +374,17 @@ def build_target_dataset(db: Session) -> dict:
         inserted += 1
 
     db.commit()
+    verified_in_dataset = inserted
     return {
         "inserted": inserted,
         "skipped": skipped,
         "previous_count": len(existing_company_ids),
         "total": inserted,
         "enriched": inserted,
+        "verification": {
+            "verified_in_dataset": verified_in_dataset,
+            "unverified_excluded": unverified_excluded,
+        },
         "deduplication": {
             "input_companies": dedupe_report.input_count,
             "duplicates_removed": dedupe_report.duplicates_removed,

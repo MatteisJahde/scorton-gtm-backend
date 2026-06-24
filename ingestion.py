@@ -7,6 +7,7 @@ from seed_data import (
     actual_companies_available,
     is_synthetic_company_name,
     load_actual_companies_with_report,
+    verification_report_dict,
 )
 from sorting_agent import ALLOWED_CITIES
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
@@ -50,6 +51,7 @@ def ingest_companies(db: Session) -> dict:
                 "accepted": csv_report.accepted,
                 "rejected": csv_report.rejected,
                 "allowed_cities": sorted(ALLOWED_CITIES),
+                "verification": verification_report_dict(csv_report),
             },
         }
 
@@ -109,5 +111,6 @@ def ingest_companies(db: Session) -> dict:
             "accepted": csv_report.accepted,
             "rejected": csv_report.rejected,
             "allowed_cities": sorted(ALLOWED_CITIES),
+            "verification": verification_report_dict(csv_report),
         },
     }

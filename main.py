@@ -181,6 +181,12 @@ def _bootstrap_from_actual_companies_csv() -> None:
         print(f"Startup: loading companies from {ACTUAL_COMPANIES_CSV.name}")
         ingest_result = ingest_companies(db)
         build_result = build_target_dataset(db)
+        verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
+        print(
+            f"[startup] Lead verification — Verified: {verification.get('verified', 0)} | "
+            f"Unverified: {verification.get('unverified', 0)}",
+            flush=True,
+        )
         print(
             {
                 "startup_ingest": ingest_result,
@@ -338,6 +344,9 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "buyer_name": lead.get("buyer_name"),
                 "job_title": lead.get("job_title"),
                 "work_email": lead.get("work_email"),
+                "lead_verification_status": lead.get("lead_verification_status"),
+                "verification_status": lead.get("verification_status"),
+                "contact_verification_status": lead.get("contact_verification_status"),
             }
         )
     return pd.DataFrame(records)
@@ -643,12 +652,42 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
     if ingest_result.get("error"):
         raise HTTPException(status_code=400, detail=ingest_result)
 
+    verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
+    dataset_verification = {}
     build_result = build_target_dataset(db)
+    dataset_verification = build_result.get("verification") or {}
+
+    verified_count = verification.get("verified", 0)
+    unverified_count = verification.get("unverified", 0)
+    print(
+        f"[reload-from-csv] Lead verification — Verified: {verified_count} | "
+        f"Unverified: {unverified_count} "
+        f"(email_failed: {verification.get('email_failed', 0)}, "
+        f"contact_failed: {verification.get('contact_failed', 0)})",
+        flush=True,
+    )
+    print(
+        f"[reload-from-csv] Target dataset — verified_in_dataset: "
+        f"{dataset_verification.get('verified_in_dataset', 0)} | "
+        f"unverified_excluded: {dataset_verification.get('unverified_excluded', 0)}",
+        flush=True,
+    )
+
     return {
         "source": str(ACTUAL_COMPANIES_CSV),
         "csv_rows": len(get_companies()),
         "ingest": ingest_result,
         "build_target_dataset": build_result,
+        "verification_summary": {
+            "csv_verified": verified_count,
+            "csv_unverified": unverified_count,
+            "email_failed": verification.get("email_failed", 0),
+            "contact_failed": verification.get("contact_failed", 0),
+            "verified_in_dataset": dataset_verification.get("verified_in_dataset", 0),
+            "unverified_excluded_from_dataset": dataset_verification.get(
+                "unverified_excluded", 0
+            ),
+        },
     }
 
 

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Mapping, Optional
 
 from city_utils import normalize_city_name
+from services.lead_validation import LEAD_STATUS_VERIFIED, validate_lead
 from sorting_agent import ALLOWED_CITIES
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -34,7 +35,7 @@ CSV_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     ),
     "intent": ("intent",),
     "signal_score": ("signal_score", "company_ai_signal", "ai_signal", "score"),
-    "buyer_name": ("buyer_name", "buyer name"),
+    "buyer_name": ("buyer_name", "buyer name", "reach out to"),
     "job_title": ("job_title", "job title", "title"),
     "work_email": ("work_email", "work email", "email"),
     "linkedin_url": ("linkedin_url", "company_linkedin_url", "linkedin", "linkedin url"),
@@ -52,9 +53,18 @@ SYNTHETIC_NAME_PATTERN = re.compile(
 
 
 @dataclass
+class VerificationSummary:
+    verified: int = 0
+    unverified: int = 0
+    email_failed: int = 0
+    contact_failed: int = 0
+
+
+@dataclass
 class CsvLoadReport:
     accepted: int = 0
     rejected: list[dict[str, str]] = field(default_factory=list)
+    verification: VerificationSummary = field(default_factory=VerificationSummary)
 
 
 def actual_companies_path() -> Path:
@@ -127,6 +137,53 @@ def _parse_int(raw: str) -> Optional[int]:
 
 def get_company_csv_extras(name: str) -> dict[str, Any]:
     return _COMPANY_CSV_EXTRAS.get(name, {})
+
+
+def verification_report_dict(report: CsvLoadReport) -> dict[str, int]:
+    return {
+        "verified": report.verification.verified,
+        "unverified": report.verification.unverified,
+        "email_failed": report.verification.email_failed,
+        "contact_failed": report.verification.contact_failed,
+    }
+
+
+def log_verification_summary(report: CsvLoadReport, *, context: str = "lead_verification") -> None:
+    summary = verification_report_dict(report)
+    print(
+        f"[{context}] Verified: {summary['verified']} | "
+        f"Unverified: {summary['unverified']} "
+        f"(email_failed: {summary['email_failed']}, contact_failed: {summary['contact_failed']})",
+        flush=True,
+    )
+
+
+def _record_verification_rejection(
+    report: CsvLoadReport,
+    company: str,
+    validation: dict[str, Any],
+) -> None:
+    report.verification.unverified += 1
+    reasons = validation.get("failure_reasons") or []
+    if "email" in reasons:
+        report.verification.email_failed += 1
+        _reject(
+            report,
+            company,
+            "email_verification_failed",
+            detail=str(validation.get("verification_status") or validation["email"].get("detail")),
+        )
+        return
+    if "contact" in reasons:
+        report.verification.contact_failed += 1
+        _reject(
+            report,
+            company,
+            "contact_verification_failed",
+            detail=str(validation.get("contact_verification_status") or validation["contact"].get("detail")),
+        )
+        return
+    _reject(report, company, "lead_verification_failed")
 
 
 def _reject(report: CsvLoadReport, company: str, reason: str, *, detail: str = "") -> None:
@@ -212,12 +269,53 @@ def map_csv_row_to_company(
         return None
 
     signal_score = _parse_int(_first_value(row, CSV_FIELD_ALIASES["signal_score"]))
+    buyer_name = _first_value(row, CSV_FIELD_ALIASES["buyer_name"]) or None
+    job_title = _first_value(row, CSV_FIELD_ALIASES["job_title"]) or None
+    work_email = _first_value(row, CSV_FIELD_ALIASES["work_email"]) or None
+    linkedin_url = _first_value(row, CSV_FIELD_ALIASES["linkedin_url"]) or None
+
+    if not buyer_name:
+        if report:
+            _reject(report, name, "missing_buyer_name")
+        return None
+    if not job_title:
+        if report:
+            _reject(report, name, "missing_job_title")
+        return None
+    if not work_email:
+        if report:
+            _reject(report, name, "missing_work_email")
+        return None
+
+    validation = validate_lead(
+        work_email=work_email,
+        buyer_name=buyer_name,
+        job_title=job_title,
+        company_name=name,
+        website=website,
+        linkedin_url=linkedin_url,
+        seed=hash(name) % 10_000,
+    )
+    if not validation["qualified"]:
+        if report:
+            _record_verification_rejection(report, name, validation)
+        return None
+
+    if report:
+        report.verification.verified += 1
+
     extras = {
         "intent": _first_value(row, CSV_FIELD_ALIASES["intent"]).lower() or None,
         "signal_score": signal_score,
-        "buyer_name": _first_value(row, CSV_FIELD_ALIASES["buyer_name"]) or None,
-        "job_title": _first_value(row, CSV_FIELD_ALIASES["job_title"]) or None,
-        "work_email": _first_value(row, CSV_FIELD_ALIASES["work_email"]) or None,
+        "buyer_name": buyer_name,
+        "job_title": job_title,
+        "work_email": work_email,
+        "lead_verification_status": validation["lead_verification_status"],
+        "verification_status": validation["verification_status"],
+        "email_status": validation["email_status"],
+        "contact_verification_status": validation["contact_verification_status"],
+        "email_provider": validation.get("email_provider"),
+        "contact_provider": validation.get("contact_provider"),
     }
     _COMPANY_CSV_EXTRAS[name] = extras
 
@@ -228,8 +326,9 @@ def map_csv_row_to_company(
         "city": city,
         "locality": city,
         "employee_count": employee_count,
-        "linkedin_url": _first_value(row, CSV_FIELD_ALIASES["linkedin_url"]) or None,
+        "linkedin_url": linkedin_url,
         "csv_extras": extras,
+        "lead_verification_status": LEAD_STATUS_VERIFIED,
     }
 
 
@@ -264,6 +363,7 @@ def load_actual_companies(
                 companies.append(company)
 
     load_report.accepted = len(companies)
+    log_verification_summary(load_report, context="actual_companies")
     if report is None:
         return companies
     return companies

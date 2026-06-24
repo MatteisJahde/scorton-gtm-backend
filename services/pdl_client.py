@@ -23,6 +23,7 @@ TARGET_CITIES = (
     ("San Francisco", "san francisco"),
     ("Charlotte", "charlotte"),
     ("Miami", "miami"),
+    ("Chicago", "chicago"),
 )
 
 TARGET_INDUSTRIES = (
@@ -31,6 +32,18 @@ TARGET_INDUSTRIES = (
     "accounting",
     "investment management",
     "banking",
+)
+
+# Fintech + Accounting list-building (PDL industry values).
+FINTECH_ACCOUNTING_PDL_INDUSTRIES = (
+    "financial services",
+    "fintech",
+    "financial technology",
+    "banking",
+    "investment management",
+    "payments",
+    "capital markets",
+    "accounting",
 )
 
 
@@ -54,31 +67,37 @@ def require_pdl_api_key() -> str:
     )
 
 
-def _sql_for_city(locality: str) -> str:
-    industries = ", ".join(f"'{value}'" for value in TARGET_INDUSTRIES)
+def _sql_for_city(locality: str, *, industries: tuple[str, ...] = TARGET_INDUSTRIES) -> str:
+    industry_list = ", ".join(f"'{value}'" for value in industries)
     return (
         "SELECT * FROM company WHERE "
         "employee_count >= 20 AND employee_count <= 500 AND "
         "location.country = 'united states' AND "
         f"location.locality = '{locality}' AND "
-        f"industry IN ({industries})"
+        f"industry IN ({industry_list})"
     )
+
+
+def _sql_for_fintech_accounting(locality: str) -> str:
+    return _sql_for_city(locality, industries=FINTECH_ACCOUNTING_PDL_INDUSTRIES)
 
 
 def _pdl_record_to_row(record: dict[str, Any], *, display_city: str) -> dict[str, str]:
     employee_count = record.get("employee_count")
     size = str(employee_count) if employee_count is not None else (record.get("size") or "")
-    city = extract_city_from_pdl_record(record) or ""
+    city = extract_city_from_pdl_record(record) or display_city
 
     return {
         "name": (record.get("name") or record.get("display_name") or "").strip(),
         "website": (record.get("website") or "").strip(),
         "industry": (record.get("industry") or "unknown").strip(),
         "size": size,
+        "employee_count": size,
         "city": city,
         "locality": city,
         "country": "united states",
         "linkedin_url": (record.get("linkedin_url") or "").strip(),
+        "pdl_id": str(record.get("id") or ""),
     }
 
 
@@ -113,12 +132,14 @@ def _fetch_city_companies(
     sql_locality: str,
     api_key: str,
     max_rows: Optional[int] = None,
+    sql_builder=None,
 ) -> list[dict[str, str]]:
     """Fetch all available companies for one city (paginated). No per-city quotas."""
     headers = {
         "Content-Type": "application/json",
         "X-api-key": api_key,
     }
+    build_sql = sql_builder or _sql_for_city
 
     rows: list[dict[str, str]] = []
     scroll_token: Optional[str] = None
@@ -132,7 +153,7 @@ def _fetch_city_companies(
 
         batch_size = 100 if max_rows is None else min(100, max_rows - len(rows))
         payload: dict[str, Any] = {
-            "sql": _sql_for_city(sql_locality),
+            "sql": build_sql(sql_locality),
             "size": batch_size,
             "titlecase": True,
         }
@@ -243,3 +264,64 @@ def fetch_companies_from_pdl(
         flush=True,
     )
     return all_rows[:target_count] if target_count is not None else all_rows
+
+
+def map_pdl_industry_to_target_industry(pdl_industry: str) -> str:
+    """Map PDL industry strings to dashboard-accepted industry labels."""
+    normalized = (pdl_industry or "").strip().lower()
+    if "account" in normalized:
+        return "Accounting"
+    return "Financial Services"
+
+
+def fetch_fintech_and_accounting_companies(
+    target_count: int = 100,
+    *,
+    api_key: Optional[str] = None,
+) -> list[dict[str, str]]:
+    """
+    Fetch companies in Fintech / Financial Services and Accounting from PDL.
+
+    Returns up to ``target_count`` unique companies across all target US cities.
+    """
+    api_key = api_key or require_pdl_api_key()
+
+    all_rows: list[dict[str, str]] = []
+    seen_names: set[str] = set()
+
+    for display_city, sql_locality in TARGET_CITIES:
+        remaining = max(target_count - len(all_rows), 0)
+        if remaining == 0:
+            break
+
+        city_rows = _fetch_city_companies(
+            display_city=display_city,
+            sql_locality=sql_locality,
+            api_key=api_key,
+            max_rows=remaining,
+            sql_builder=_sql_for_fintech_accounting,
+        )
+
+        for row in city_rows:
+            name = row["name"]
+            if not name or name in seen_names:
+                continue
+            if not row.get("website"):
+                continue
+            seen_names.add(name)
+            row["industry"] = map_pdl_industry_to_target_industry(row["industry"])
+            all_rows.append(row)
+            if len(all_rows) >= target_count:
+                break
+
+    if not all_rows:
+        raise PDLAPIError(
+            "PDL API returned zero Fintech/Accounting companies across target cities."
+        )
+
+    print(
+        f"Fetched {len(all_rows)} Fintech/Accounting companies "
+        f"(target={target_count}).",
+        flush=True,
+    )
+    return all_rows[:target_count]
