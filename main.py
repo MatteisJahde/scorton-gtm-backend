@@ -1,4 +1,5 @@
 import csv
+import traceback
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -168,7 +169,22 @@ def _contact_to_dict(contact: Contact) -> dict:
 DATA_FILE_PATH = "actual_companies.csv"
 
 
-def load_data(data_file_path: str) -> None:
+def initialize_database(data_file_path: str) -> None:
+    """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
+    try:
+        print("[database] Initializing SQLite database...", flush=True)
+        Base.metadata.create_all(bind=engine)
+        migrate_db()
+        _load_seed_data(data_file_path)
+    except Exception as exc:
+        print(
+            f"[database] Startup initialization failed (server will continue): {exc}",
+            flush=True,
+        )
+        traceback.print_exc()
+
+
+def _load_seed_data(data_file_path: str) -> None:
     """Force-ingest companies from CSV and rebuild the target dataset."""
     csv_path = Path(__file__).resolve().parent / data_file_path
     print(f"FORCING LOAD: {csv_path}", flush=True)
@@ -176,9 +192,6 @@ def load_data(data_file_path: str) -> None:
     if not csv_path.exists():
         print(f"FORCING LOAD: file not found — {csv_path}", flush=True)
         return
-
-    Base.metadata.create_all(bind=engine)
-    migrate_db()
 
     db = SessionLocal()
     try:
@@ -215,11 +228,16 @@ def load_data(data_file_path: str) -> None:
         db.close()
 
 
+def load_data(data_file_path: str) -> None:
+    """Backward-compatible alias for startup CSV load."""
+    initialize_database(data_file_path)
+
+
 @app.on_event("startup")
 async def startup_event():
     # Force the engine to load the verified 19-company list immediately
     print(f"FORCING LOAD: {DATA_FILE_PATH}", flush=True)
-    load_data(DATA_FILE_PATH)
+    initialize_database(DATA_FILE_PATH)
 
 
 @app.get("/health")
