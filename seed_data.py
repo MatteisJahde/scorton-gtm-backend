@@ -78,7 +78,7 @@ KNOWN_COMPANY_METADATA: dict[str, dict[str, Any]] = {
         "employee_count": 210,
     },
     "Aprio": {
-        "city": "Atlanta",
+        "city": "Charlotte",
         "industry": "Accounting",
         "employee_count": 280,
     },
