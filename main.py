@@ -39,7 +39,12 @@ from dataset_builder import (
 from deduplication import deduplicate_company_records
 from ingestion import ingest_companies
 from models import Company, Contact, TargetAccount
-from seed_data import ACTUAL_COMPANIES_CSV, actual_companies_available, get_companies
+from seed_data import (
+    ACTUAL_COMPANIES_CSV,
+    actual_companies_available,
+    get_companies,
+    load_actual_companies_with_report,
+)
 from services.weekly_batch import pull_weekly_batch
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
@@ -159,27 +164,39 @@ def _contact_to_dict(contact: Contact) -> dict:
     }
 
 
-@app.on_event("startup")
-def on_startup():
+# Force-load the correct file on startup
+DATA_FILE_PATH = "actual_companies.csv"
+
+
+def load_data(data_file_path: str) -> None:
+    """Force-ingest companies from CSV and rebuild the target dataset."""
+    csv_path = Path(__file__).resolve().parent / data_file_path
+    print(f"FORCING LOAD: {csv_path}", flush=True)
+
+    if not csv_path.exists():
+        print(f"FORCING LOAD: file not found — {csv_path}", flush=True)
+        return
+
     Base.metadata.create_all(bind=engine)
     migrate_db()
-    _bootstrap_from_actual_companies_csv()
-
-
-def _bootstrap_from_actual_companies_csv() -> None:
-    """Load real companies from actual_companies.csv when the dashboard DB is empty."""
-    if not actual_companies_available():
-        print(f"Startup: {ACTUAL_COMPANIES_CSV.name} not found; skipping auto-ingest.")
-        return
 
     db = SessionLocal()
     try:
-        has_target_accounts = db.query(TargetAccount.id).first() is not None
-        if has_target_accounts:
+        db.query(TargetAccount).delete()
+        db.query(Contact).delete()
+        db.query(Company).delete()
+        db.commit()
+
+        companies, _report = load_actual_companies_with_report(csv_path)
+        if not companies:
+            print("FORCING LOAD: no valid rows found in CSV.", flush=True)
             return
 
-        print(f"Startup: loading companies from {ACTUAL_COMPANIES_CSV.name}")
         ingest_result = ingest_companies(db)
+        if ingest_result.get("error"):
+            print(f"FORCING LOAD: ingest failed — {ingest_result}", flush=True)
+            return
+
         build_result = build_target_dataset(db)
         verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
         print(
@@ -191,10 +208,18 @@ def _bootstrap_from_actual_companies_csv() -> None:
             {
                 "startup_ingest": ingest_result,
                 "startup_build_target_dataset": build_result,
-            }
+            },
+            flush=True,
         )
     finally:
         db.close()
+
+
+@app.on_event("startup")
+async def startup_event():
+    # Force the engine to load the verified 19-company list immediately
+    print(f"FORCING LOAD: {DATA_FILE_PATH}", flush=True)
+    load_data(DATA_FILE_PATH)
 
 
 @app.get("/health")
