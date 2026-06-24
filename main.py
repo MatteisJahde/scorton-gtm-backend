@@ -610,6 +610,9 @@ def api_ingest(db: Session = Depends(get_db)):
 @api_router.post("/reload-from-csv")
 def api_reload_from_csv(db: Session = Depends(get_db)):
     """Re-ingest actual_companies.csv and rebuild the target dataset."""
+    print("Loading from actual_companies.csv", flush=True)
+    print(f"[reload-from-csv] CSV path: {ACTUAL_COMPANIES_CSV.resolve()}", flush=True)
+
     if not actual_companies_available():
         raise HTTPException(
             status_code=400,

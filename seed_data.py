@@ -241,14 +241,24 @@ def load_actual_companies(
     """Read companies from actual_companies.csv. Invalid rows are dropped."""
     path = csv_path or ACTUAL_COMPANIES_CSV
     load_report = report or CsvLoadReport()
+
+    print("Loading from actual_companies.csv", flush=True)
+    print(f"[actual_companies] Reading CSV path: {path.resolve()}", flush=True)
+
     if not path.exists():
+        print(f"[actual_companies] File not found: {path.resolve()}", flush=True)
         return []
 
     companies: list[dict[str, Any]] = []
     _COMPANY_CSV_EXTRAS.clear()
     with path.open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
-        for row in reader:
+        for row_index, row in enumerate(reader):
+            if row_index < 3:
+                print(
+                    f"[actual_companies] Raw row {row_index + 1} (before processing): {dict(row)}",
+                    flush=True,
+                )
             company = map_csv_row_to_company(row, report=load_report)
             if company:
                 companies.append(company)
