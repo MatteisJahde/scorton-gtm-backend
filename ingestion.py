@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from city_utils import normalize_city_name
 from models import Company, Contact
 from scoring import priority_tier, score_company
-from seed_data import actual_companies_available, get_companies, is_synthetic_company_name
+from seed_data import (
+    actual_companies_available,
+    is_synthetic_company_name,
+    load_actual_companies_with_report,
+)
 from sorting_agent import ALLOWED_CITIES
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
 
@@ -31,17 +35,22 @@ def ingest_companies(db: Session) -> dict:
         return {
             "inserted": 0,
             "skipped": 0,
-            "error": f"Missing CSV file: actual_companies.csv (expected in project root)",
+            "error": "Missing CSV file: actual_companies.csv (expected in project root)",
             "source": "actual_companies.csv",
         }
 
-    companies = get_companies()
+    companies, csv_report = load_actual_companies_with_report()
     if not companies:
         return {
             "inserted": 0,
             "skipped": 0,
             "error": "actual_companies.csv contains no valid company rows",
             "source": "actual_companies.csv",
+            "csv_validation": {
+                "accepted": csv_report.accepted,
+                "rejected": csv_report.rejected,
+                "allowed_cities": sorted(ALLOWED_CITIES),
+            },
         }
 
     existing_names = {name for (name,) in db.query(Company.name).all()}
@@ -96,5 +105,9 @@ def ingest_companies(db: Session) -> dict:
         "inserted": inserted,
         "skipped": skipped,
         "source": "actual_companies.csv",
-        "total_rows_in_csv": len(companies),
+        "csv_validation": {
+            "accepted": csv_report.accepted,
+            "rejected": csv_report.rejected,
+            "allowed_cities": sorted(ALLOWED_CITIES),
+        },
     }

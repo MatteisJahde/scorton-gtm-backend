@@ -616,12 +616,18 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
             detail={
                 "error": f"Missing {ACTUAL_COMPANIES_CSV.name} in project root",
                 "expected_columns": [
-                    "Company",
-                    "Website",
-                    "Industry",
-                    "City",
-                    "Employee Count",
+                    "company",
+                    "website",
+                    "industry",
+                    "city",
+                    "employee_count",
+                    "intent",
+                    "signal_score",
+                    "buyer_name",
+                    "job_title",
+                    "work_email",
                 ],
+                "allowed_cities": sorted(ALLOWED_CITIES),
             },
         )
 

@@ -1,20 +1,20 @@
-company,website,industry,intent,signal_score,buyer_name,job_title,work_email
-Betterment,https://www.betterment.com,Financial Services,high,94,Sarah Kirchner,Chief Compliance Officer,sarah.kirchner@betterment.com
-Policygenius,https://www.policygenius.com,Insurance,high,91,Jennifer Fitzgerald,CEO,jennifer.fitzgerald@policygenius.com
-Alloy,https://www.alloy.com,Financial Services,high,96,Tommy Nicholas,CEO,tommy.nicholas@alloy.com
-Novo,https://www.novo.co,Financial Services,high,88,Michael Barbarita,COO,michael.barbarita@novo.co
-Newfront Insurance,https://www.newfront.com,Insurance,high,90,Gordon Wintrob,Co-CEO,gordon.wintrob@newfront.com
-Vouch Insurance,https://www.vouch.us,Insurance,high,87,Sam Gerstenzang,CEO,sam.gerstenzang@vouch.us
-Highnote,https://www.highnote.com,Financial Services,high,93,Ahmed Siddiqui,CEO,ahmed.siddiqui@highnote.com
-Pipe,https://www.pipe.com,Financial Services,high,92,Harry Hurst,Co-CEO,harry.hurst@pipe.com
-Aprio,https://www.aprio.com,Accounting,high,85,Carlton Collins,Director of Technology,carlton.collins@aprio.com
-AssuredPartners,https://www.assuredpartners.com,Insurance,high,89,Jim Henderson,President Midwest Region,jim.henderson@assuredpartners.com
-Northern Trust,https://www.northerntrust.com,Financial Services,high,95,Logan Sullivan,CIO,logan.sullivan@northerntrust.com
-Morningstar,https://www.morningstar.com,Financial Services,high,97,Jamie Hayes,Head of Risk,jamie.hayes@morningstar.com
-TransUnion,https://www.transunion.com,Financial Services,high,96,Quinn Reed,Director of Compliance,quinn.reed@transunion.com
-CNA Financial,https://www.cna.com,Insurance,high,93,Alex Chen,CRO,alex.chen@cna.com
-HUB International,https://www.hubinternational.com,Insurance,high,90,Taylor Foster,CAIO,taylor.foster@hubinternational.com
-William Blair,https://www.williamblair.com,Financial Services,high,91,Morgan Coleman,Head of Risk,morgan.coleman@williamblair.com
-Relativity,https://www.relativity.com,Financial Services,high,88,Blake Patel,Director of Governance,blake.patel@relativity.com
-Jellyvision,https://www.jellyvision.com,Accounting,high,86,Riley Walsh,CFO,riley.walsh@jellyvision.com
-Braintree,https://www.braintreepayments.com,Financial Services,high,92,Casey Nguyen,CTO,casey.nguyen@braintreepayments.com
+company,website,industry,city,employee_count,intent,signal_score,buyer_name,job_title,work_email
+Betterment,https://www.betterment.com,Financial Services,New York,450,high,94,Sarah Kirchner,Chief Compliance Officer,sarah.kirchner@betterment.com
+Policygenius,https://www.policygenius.com,Insurance,New York,340,high,91,Jennifer Fitzgerald,CEO,jennifer.fitzgerald@policygenius.com
+Alloy,https://www.alloy.com,Financial Services,New York,220,high,96,Tommy Nicholas,CEO,tommy.nicholas@alloy.com
+Novo,https://www.novo.co,Financial Services,New York,180,high,88,Michael Barbarita,COO,michael.barbarita@novo.co
+Newfront Insurance,https://www.newfront.com,Insurance,San Francisco,380,high,90,Gordon Wintrob,Co-CEO,gordon.wintrob@newfront.com
+Vouch Insurance,https://www.vouch.us,Insurance,San Francisco,150,high,87,Sam Gerstenzang,CEO,sam.gerstenzang@vouch.us
+Highnote,https://www.highnote.com,Financial Services,San Francisco,120,high,93,Ahmed Siddiqui,CEO,ahmed.siddiqui@highnote.com
+Pipe,https://www.pipe.com,Financial Services,Miami,210,high,92,Harry Hurst,Co-CEO,harry.hurst@pipe.com
+Aprio,https://www.aprio.com,Accounting,Atlanta,280,high,85,Carlton Collins,Director of Technology,carlton.collins@aprio.com
+AssuredPartners,https://www.assuredpartners.com,Insurance,Orlando,190,high,89,Jim Henderson,President Southeast Region,jim.henderson@assuredpartners.com
+Northern Trust,https://www.northerntrust.com,Financial Services,Chicago,95,high,95,Logan Sullivan,CIO,logan.sullivan@northerntrust.com
+Morningstar,https://www.morningstar.com,Financial Services,Chicago,450,high,97,Jamie Hayes,Head of Risk,jamie.hayes@morningstar.com
+TransUnion,https://www.transunion.com,Financial Services,Chicago,420,high,96,Quinn Reed,Director of Compliance,quinn.reed@transunion.com
+CNA Financial,https://www.cna.com,Insurance,Chicago,400,high,93,Alex Chen,CRO,alex.chen@cna.com
+HUB International,https://www.hubinternational.com,Insurance,Chicago,280,high,90,Taylor Foster,CAIO,taylor.foster@hubinternational.com
+William Blair,https://www.williamblair.com,Financial Services,Chicago,175,high,91,Morgan Coleman,Head of Risk,morgan.coleman@williamblair.com
+Relativity,https://www.relativity.com,Financial Services,Chicago,150,high,88,Blake Patel,Director of Governance,blake.patel@relativity.com
+Jellyvision,https://www.jellyvision.com,Accounting,Chicago,260,high,86,Riley Walsh,CFO,riley.walsh@jellyvision.com
+Braintree,https://www.braintreepayments.com,Financial Services,Chicago,140,high,92,Casey Nguyen,CTO,casey.nguyen@braintreepayments.com

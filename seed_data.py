@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import csv
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
 from city_utils import normalize_city_name
+from sorting_agent import ALLOWED_CITIES
 
 ROOT_DIR = Path(__file__).resolve().parent
 ACTUAL_COMPANIES_CSV = ROOT_DIR / "actual_companies.csv"
 
 PLACEHOLDER_NAME_MARKERS = ("PDL Sample Co", "Sample Co")
+ALLOWED_INDUSTRIES = {"Financial Services", "Insurance", "Accounting"}
+MIN_EMPLOYEE_COUNT = 20
+MAX_EMPLOYEE_COUNT = 500
 
 # Friendly spreadsheet headers -> internal field names.
 CSV_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
@@ -35,105 +40,6 @@ CSV_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     "linkedin_url": ("linkedin_url", "company_linkedin_url", "linkedin", "linkedin url"),
 }
 
-# City/employee metadata for known real companies when not present in CSV columns.
-KNOWN_COMPANY_METADATA: dict[str, dict[str, Any]] = {
-    "Betterment": {
-        "city": "New York",
-        "industry": "Financial Services",
-        "employee_count": 450,
-    },
-    "Policygenius": {
-        "city": "New York",
-        "industry": "Insurance",
-        "employee_count": 340,
-    },
-    "Alloy": {
-        "city": "New York",
-        "industry": "Financial Services",
-        "employee_count": 220,
-    },
-    "Novo": {
-        "city": "New York",
-        "industry": "Financial Services",
-        "employee_count": 180,
-    },
-    "Newfront Insurance": {
-        "city": "San Francisco",
-        "industry": "Insurance",
-        "employee_count": 380,
-    },
-    "Vouch Insurance": {
-        "city": "San Francisco",
-        "industry": "Insurance",
-        "employee_count": 150,
-    },
-    "Highnote": {
-        "city": "San Francisco",
-        "industry": "Financial Services",
-        "employee_count": 120,
-    },
-    "Pipe": {
-        "city": "San Francisco",
-        "industry": "Financial Services",
-        "employee_count": 210,
-    },
-    "Aprio": {
-        "city": "Charlotte",
-        "industry": "Accounting",
-        "employee_count": 280,
-    },
-    "AssuredPartners": {
-        "city": "Chicago",
-        "industry": "Insurance",
-        "employee_count": 190,
-    },
-    "Northern Trust": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 95,
-    },
-    "Morningstar": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 450,
-    },
-    "TransUnion": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 420,
-    },
-    "CNA Financial": {
-        "city": "Chicago",
-        "industry": "Insurance",
-        "employee_count": 400,
-    },
-    "HUB International": {
-        "city": "Chicago",
-        "industry": "Insurance",
-        "employee_count": 280,
-    },
-    "William Blair": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 175,
-    },
-    "Relativity": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 150,
-    },
-    "Jellyvision": {
-        "city": "Chicago",
-        "industry": "Accounting",
-        "employee_count": 260,
-    },
-    "Braintree": {
-        "city": "Chicago",
-        "industry": "Financial Services",
-        "employee_count": 140,
-    },
-}
-
 _COMPANY_CSV_EXTRAS: dict[str, dict[str, Any]] = {}
 
 SYNTHETIC_NAME_PATTERN = re.compile(
@@ -143,6 +49,12 @@ SYNTHETIC_NAME_PATTERN = re.compile(
     r".*\bGroup\s+\d{4}\b",
     re.IGNORECASE,
 )
+
+
+@dataclass
+class CsvLoadReport:
+    accepted: int = 0
+    rejected: list[dict[str, str]] = field(default_factory=list)
 
 
 def actual_companies_path() -> Path:
@@ -180,11 +92,10 @@ def _parse_employee_count(raw: str) -> Optional[int]:
     return int(digits) if digits else None
 
 
-def _normalize_website(raw: str, company_name: str) -> str:
+def _normalize_website(raw: str) -> str:
     website = (raw or "").strip()
     if not website:
-        slug = "".join(char.lower() for char in company_name if char.isalnum())
-        return f"https://www.{slug[:28]}.com" if slug else ""
+        return ""
     if not website.startswith(("http://", "https://")):
         website = f"https://{website}"
     return website
@@ -218,22 +129,87 @@ def get_company_csv_extras(name: str) -> dict[str, Any]:
     return _COMPANY_CSV_EXTRAS.get(name, {})
 
 
-def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
-    """Map a CSV row to the internal company dict used by ingestion."""
+def _reject(report: CsvLoadReport, company: str, reason: str, *, detail: str = "") -> None:
+    entry = {"company": company or "(unknown)", "reason": reason}
+    if detail:
+        entry["detail"] = detail
+    report.rejected.append(entry)
+
+
+def map_csv_row_to_company(
+    row: Mapping[str, str],
+    *,
+    report: Optional[CsvLoadReport] = None,
+) -> Optional[dict[str, Any]]:
+    """Map a CSV row to an internal company dict. Reject invalid rows (no remapping)."""
     name = _first_value(row, CSV_FIELD_ALIASES["name"])
-    if not name or is_synthetic_company_name(name):
+    if not name:
+        if report:
+            _reject(report, "", "missing_company_name")
+        return None
+    if is_synthetic_company_name(name):
+        if report:
+            _reject(report, name, "synthetic_or_placeholder_name")
         return None
 
-    metadata = KNOWN_COMPANY_METADATA.get(name, {})
-    city = normalize_city_name(
-        _first_value(row, CSV_FIELD_ALIASES["city"]) or metadata.get("city")
-    )
-    industry = _first_value(row, CSV_FIELD_ALIASES["industry"]) or metadata.get("industry")
+    website = _normalize_website(_first_value(row, CSV_FIELD_ALIASES["website"]))
+    if not website:
+        if report:
+            _reject(report, name, "missing_website")
+        return None
+
+    industry = _first_value(row, CSV_FIELD_ALIASES["industry"])
+    if not industry:
+        if report:
+            _reject(report, name, "missing_industry")
+        return None
+    if industry not in ALLOWED_INDUSTRIES:
+        if report:
+            _reject(report, name, "industry_not_allowed", detail=industry)
+        return None
+
+    raw_city = _first_value(row, CSV_FIELD_ALIASES["city"])
+    if not raw_city:
+        if report:
+            _reject(report, name, "missing_city")
+        return None
+
+    city = normalize_city_name(raw_city)
+    if not city:
+        if report:
+            _reject(
+                report,
+                name,
+                "city_not_in_target_list",
+                detail=raw_city,
+            )
+        return None
+    if city not in ALLOWED_CITIES:
+        if report:
+            _reject(
+                report,
+                name,
+                "city_not_in_target_list",
+                detail=raw_city,
+            )
+        return None
+
     employee_count = _parse_employee_count(
         _first_value(row, CSV_FIELD_ALIASES["employee_count"])
     )
     if employee_count is None:
-        employee_count = metadata.get("employee_count")
+        if report:
+            _reject(report, name, "missing_employee_count")
+        return None
+    if employee_count < MIN_EMPLOYEE_COUNT or employee_count > MAX_EMPLOYEE_COUNT:
+        if report:
+            _reject(
+                report,
+                name,
+                "employee_count_out_of_range",
+                detail=str(employee_count),
+            )
+        return None
 
     signal_score = _parse_int(_first_value(row, CSV_FIELD_ALIASES["signal_score"]))
     extras = {
@@ -247,7 +223,7 @@ def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
 
     return {
         "name": name,
-        "website": _normalize_website(_first_value(row, CSV_FIELD_ALIASES["website"]), name),
+        "website": website,
         "industry": industry,
         "city": city,
         "locality": city,
@@ -257,9 +233,14 @@ def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
     }
 
 
-def load_actual_companies(csv_path: Optional[Path] = None) -> list[dict[str, Any]]:
-    """Read companies from actual_companies.csv. Returns [] if the file is missing."""
+def load_actual_companies(
+    csv_path: Optional[Path] = None,
+    *,
+    report: Optional[CsvLoadReport] = None,
+) -> list[dict[str, Any]]:
+    """Read companies from actual_companies.csv. Invalid rows are dropped."""
     path = csv_path or ACTUAL_COMPANIES_CSV
+    load_report = report or CsvLoadReport()
     if not path.exists():
         return []
 
@@ -268,15 +249,28 @@ def load_actual_companies(csv_path: Optional[Path] = None) -> list[dict[str, Any
     with path.open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
-            company = map_csv_row_to_company(row)
+            company = map_csv_row_to_company(row, report=load_report)
             if company:
                 companies.append(company)
+
+    load_report.accepted = len(companies)
+    if report is None:
+        return companies
     return companies
+
+
+def load_actual_companies_with_report(
+    csv_path: Optional[Path] = None,
+) -> tuple[list[dict[str, Any]], CsvLoadReport]:
+    report = CsvLoadReport()
+    companies = load_actual_companies(csv_path, report=report)
+    return companies, report
 
 
 def get_companies() -> list[dict[str, Any]]:
     """Primary data source for ingestion (static CSV only)."""
-    return load_actual_companies()
+    companies, _report = load_actual_companies_with_report()
+    return companies
 
 
 # Backward-compatible alias used by ingestion.py / dataset_builder.py.
