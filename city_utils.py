@@ -5,14 +5,18 @@ from __future__ import annotations
 from typing import Any, Mapping, Optional
 
 TARGET_CITY_NAMES = (
+    "Atlanta",
     "Charlotte",
+    "Chicago",
     "Miami",
     "New York",
     "San Francisco",
 )
 
 CITY_ALIASES = {
+    "atlanta": "Atlanta",
     "charlotte": "Charlotte",
+    "chicago": "Chicago",
     "miami": "Miami",
     "new york": "New York",
     "new york city": "New York",

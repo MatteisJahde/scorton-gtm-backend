@@ -4,14 +4,18 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-ALLOWED_CITIES = frozenset({"New York", "San Francisco", "Charlotte", "Miami"})
+ALLOWED_CITIES = frozenset(
+    {"New York", "San Francisco", "Charlotte", "Miami", "Chicago", "Atlanta"}
+)
 
 # Per-city target account quotas (must sum to MAX_TARGET_ACCOUNTS).
 CITY_TARGET_QUOTAS = {
-    "New York": 400,
-    "San Francisco": 300,
-    "Charlotte": 200,
-    "Miami": 100,
+    "New York": 350,
+    "San Francisco": 250,
+    "Charlotte": 175,
+    "Miami": 90,
+    "Chicago": 100,
+    "Atlanta": 35,
 }
 MAX_TARGET_ACCOUNTS = sum(CITY_TARGET_QUOTAS.values())
 
@@ -23,8 +27,10 @@ TIER_TWO_CITIES = frozenset(ALLOWED_CITIES - TIER_ONE_CITIES)
 CITY_RANK_WEIGHTS = {
     "New York": 15,
     "San Francisco": 15,
+    "Chicago": 12,
     "Charlotte": 10,
     "Miami": 10,
+    "Atlanta": 10,
 }
 
 PRIORITY_CITIES = TIER_ONE_CITIES

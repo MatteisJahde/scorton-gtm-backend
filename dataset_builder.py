@@ -27,7 +27,9 @@ MAX_TARGET_ACCOUNTS = 1000
 PER_CITY_LIMIT = MAX_TARGET_ACCOUNTS // 4
 
 ORIGINAL_TARGET_CITIES = (
+    "Atlanta",
     "Charlotte",
+    "Chicago",
     "Miami",
     "New York",
     "San Francisco",

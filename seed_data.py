@@ -37,16 +37,101 @@ CSV_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
 
 # City/employee metadata for known real companies when not present in CSV columns.
 KNOWN_COMPANY_METADATA: dict[str, dict[str, Any]] = {
-    "Betterment": {"city": "New York", "employee_count": 450},
-    "Policygenius": {"city": "New York", "employee_count": 340},
-    "Alloy": {"city": "New York", "employee_count": 220},
-    "Novo": {"city": "New York", "employee_count": 180},
-    "Newfront Insurance": {"city": "San Francisco", "employee_count": 380},
-    "Vouch Insurance": {"city": "San Francisco", "employee_count": 150},
-    "Highnote": {"city": "San Francisco", "employee_count": 120},
-    "Pipe": {"city": "San Francisco", "employee_count": 210},
-    "Aprio": {"city": "Charlotte", "employee_count": 280},
-    "AssuredPartners": {"city": "Miami", "employee_count": 190},
+    "Betterment": {
+        "city": "New York",
+        "industry": "Financial Services",
+        "employee_count": 450,
+    },
+    "Policygenius": {
+        "city": "New York",
+        "industry": "Insurance",
+        "employee_count": 340,
+    },
+    "Alloy": {
+        "city": "New York",
+        "industry": "Financial Services",
+        "employee_count": 220,
+    },
+    "Novo": {
+        "city": "New York",
+        "industry": "Financial Services",
+        "employee_count": 180,
+    },
+    "Newfront Insurance": {
+        "city": "San Francisco",
+        "industry": "Insurance",
+        "employee_count": 380,
+    },
+    "Vouch Insurance": {
+        "city": "San Francisco",
+        "industry": "Insurance",
+        "employee_count": 150,
+    },
+    "Highnote": {
+        "city": "San Francisco",
+        "industry": "Financial Services",
+        "employee_count": 120,
+    },
+    "Pipe": {
+        "city": "San Francisco",
+        "industry": "Financial Services",
+        "employee_count": 210,
+    },
+    "Aprio": {
+        "city": "Atlanta",
+        "industry": "Accounting",
+        "employee_count": 280,
+    },
+    "AssuredPartners": {
+        "city": "Chicago",
+        "industry": "Insurance",
+        "employee_count": 190,
+    },
+    "Northern Trust": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 95,
+    },
+    "Morningstar": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 450,
+    },
+    "TransUnion": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 420,
+    },
+    "CNA Financial": {
+        "city": "Chicago",
+        "industry": "Insurance",
+        "employee_count": 400,
+    },
+    "HUB International": {
+        "city": "Chicago",
+        "industry": "Insurance",
+        "employee_count": 280,
+    },
+    "William Blair": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 175,
+    },
+    "Relativity": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 150,
+    },
+    "Jellyvision": {
+        "city": "Chicago",
+        "industry": "Accounting",
+        "employee_count": 260,
+    },
+    "Braintree": {
+        "city": "Chicago",
+        "industry": "Financial Services",
+        "employee_count": 140,
+    },
 }
 
 _COMPANY_CSV_EXTRAS: dict[str, dict[str, Any]] = {}
@@ -143,7 +228,7 @@ def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
     city = normalize_city_name(
         _first_value(row, CSV_FIELD_ALIASES["city"]) or metadata.get("city")
     )
-    industry = _first_value(row, CSV_FIELD_ALIASES["industry"])
+    industry = _first_value(row, CSV_FIELD_ALIASES["industry"]) or metadata.get("industry")
     employee_count = _parse_employee_count(
         _first_value(row, CSV_FIELD_ALIASES["employee_count"])
     )
