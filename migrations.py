@@ -6,13 +6,25 @@ from sqlalchemy.exc import OperationalError
 from database import engine
 
 
+def _is_duplicate_column_error(exc: BaseException) -> bool:
+    parts = [str(exc)]
+    orig = getattr(exc, "orig", None)
+    if orig is not None:
+        parts.append(str(orig))
+    return any("duplicate column name" in part.lower() for part in parts)
+
+
 def _add_column(conn, table: str, column_name: str, column_type: str) -> None:
     """Add a column, ignoring duplicate-column errors on redeploy."""
     statement = text(f"ALTER TABLE {table} ADD COLUMN {column_name} {column_type}")
     try:
         conn.execute(statement)
     except (OperationalError, sqlite3.OperationalError) as exc:
-        if "duplicate column name" in str(exc).lower():
+        if _is_duplicate_column_error(exc):
+            return
+        raise
+    except Exception as exc:
+        if _is_duplicate_column_error(exc):
             return
         raise
 
@@ -38,11 +50,9 @@ def migrate_db() -> None:
                 ("week_assigned", "INTEGER"),
             ]
             for column_name, column_type in company_migrations:
-                if column_name not in columns:
-                    _add_column(conn, "companies", column_name, column_type)
+                _add_column(conn, "companies", column_name, column_type)
 
     if "target_accounts" in table_names:
-        columns = {col["name"] for col in inspector.get_columns("target_accounts")}
         migrations = [
             ("work_email", "VARCHAR"),
             ("company_linkedin_url", "VARCHAR"),
@@ -60,8 +70,26 @@ def migrate_db() -> None:
         ]
         with engine.begin() as conn:
             for column_name, column_type in migrations:
-                if column_name not in columns:
-                    _add_column(conn, "target_accounts", column_name, column_type)
+                # Always attempt ADD COLUMN; ignore duplicate-column races on redeploy.
+                if column_name == "lead_verification_status":
+                    try:
+                        conn.execute(
+                            text(
+                                "ALTER TABLE target_accounts ADD COLUMN "
+                                "lead_verification_status VARCHAR DEFAULT 'Unverified'"
+                            )
+                        )
+                    except (OperationalError, sqlite3.OperationalError) as exc:
+                        if _is_duplicate_column_error(exc):
+                            continue
+                        raise
+                    except Exception as exc:
+                        if _is_duplicate_column_error(exc):
+                            continue
+                        raise
+                    continue
+
+                _add_column(conn, "target_accounts", column_name, column_type)
 
             try:
                 conn.execute(
