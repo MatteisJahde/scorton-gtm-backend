@@ -1,0 +1,11 @@
+company,website,industry,intent,signal_score,buyer_name,job_title,work_email
+Betterment,https://www.betterment.com,Financial Services,high,94,Sarah Kirchner,Chief Compliance Officer,sarah.kirchner@betterment.com
+Policygenius,https://www.policygenius.com,Insurance,high,91,Jennifer Fitzgerald,CEO,jennifer.fitzgerald@policygenius.com
+Alloy,https://www.alloy.com,Financial Services,high,96,Tommy Nicholas,CEO,tommy.nicholas@alloy.com
+Novo,https://www.novo.co,Financial Services,high,88,Michael Barbarita,COO,michael.barbarita@novo.co
+Newfront Insurance,https://www.newfront.com,Insurance,high,90,Gordon Wintrob,Co-CEO,gordon.wintrob@newfront.com
+Vouch Insurance,https://www.vouch.us,Insurance,high,87,Sam Gerstenzang,CEO,sam.gerstenzang@vouch.us
+Highnote,https://www.highnote.com,Financial Services,high,93,Ahmed Siddiqui,CEO,ahmed.siddiqui@highnote.com
+Pipe,https://www.pipe.com,Financial Services,high,92,Harry Hurst,Co-CEO,harry.hurst@pipe.com
+Aprio,https://www.aprio.com,Accounting,high,85,Carlton Collins,Director of Technology,carlton.collins@aprio.com
+AssuredPartners,https://www.assuredpartners.com,Insurance,high,89,Jim Henderson,President Southeast Region,jim.henderson@assuredpartners.com

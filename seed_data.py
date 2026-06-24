@@ -27,8 +27,29 @@ CSV_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "employee_size",
         "size",
     ),
+    "intent": ("intent",),
+    "signal_score": ("signal_score", "company_ai_signal", "ai_signal", "score"),
+    "buyer_name": ("buyer_name", "buyer name"),
+    "job_title": ("job_title", "job title", "title"),
+    "work_email": ("work_email", "work email", "email"),
     "linkedin_url": ("linkedin_url", "company_linkedin_url", "linkedin", "linkedin url"),
 }
+
+# City/employee metadata for known real companies when not present in CSV columns.
+KNOWN_COMPANY_METADATA: dict[str, dict[str, Any]] = {
+    "Betterment": {"city": "New York", "employee_count": 450},
+    "Policygenius": {"city": "New York", "employee_count": 340},
+    "Alloy": {"city": "New York", "employee_count": 220},
+    "Novo": {"city": "New York", "employee_count": 180},
+    "Newfront Insurance": {"city": "San Francisco", "employee_count": 380},
+    "Vouch Insurance": {"city": "San Francisco", "employee_count": 150},
+    "Highnote": {"city": "San Francisco", "employee_count": 120},
+    "Pipe": {"city": "San Francisco", "employee_count": 210},
+    "Aprio": {"city": "Charlotte", "employee_count": 280},
+    "AssuredPartners": {"city": "Miami", "employee_count": 190},
+}
+
+_COMPANY_CSV_EXTRAS: dict[str, dict[str, Any]] = {}
 
 SYNTHETIC_NAME_PATTERN = re.compile(
     r"\b(Atlas|Beacon|Crown|Delta|Echo|Falcon|Granite|Harbor|Iron|Juniper|"
@@ -98,15 +119,46 @@ def is_synthetic_company_name(name: str) -> bool:
     return bool(SYNTHETIC_NAME_PATTERN.search(value))
 
 
+def _parse_int(raw: str) -> Optional[int]:
+    text = (raw or "").strip()
+    if not text:
+        return None
+    try:
+        return int(float(text))
+    except (TypeError, ValueError):
+        return None
+
+
+def get_company_csv_extras(name: str) -> dict[str, Any]:
+    return _COMPANY_CSV_EXTRAS.get(name, {})
+
+
 def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
     """Map a CSV row to the internal company dict used by ingestion."""
     name = _first_value(row, CSV_FIELD_ALIASES["name"])
     if not name or is_synthetic_company_name(name):
         return None
 
-    city = normalize_city_name(_first_value(row, CSV_FIELD_ALIASES["city"]))
+    metadata = KNOWN_COMPANY_METADATA.get(name, {})
+    city = normalize_city_name(
+        _first_value(row, CSV_FIELD_ALIASES["city"]) or metadata.get("city")
+    )
     industry = _first_value(row, CSV_FIELD_ALIASES["industry"])
-    employee_count = _parse_employee_count(_first_value(row, CSV_FIELD_ALIASES["employee_count"]))
+    employee_count = _parse_employee_count(
+        _first_value(row, CSV_FIELD_ALIASES["employee_count"])
+    )
+    if employee_count is None:
+        employee_count = metadata.get("employee_count")
+
+    signal_score = _parse_int(_first_value(row, CSV_FIELD_ALIASES["signal_score"]))
+    extras = {
+        "intent": _first_value(row, CSV_FIELD_ALIASES["intent"]).lower() or None,
+        "signal_score": signal_score,
+        "buyer_name": _first_value(row, CSV_FIELD_ALIASES["buyer_name"]) or None,
+        "job_title": _first_value(row, CSV_FIELD_ALIASES["job_title"]) or None,
+        "work_email": _first_value(row, CSV_FIELD_ALIASES["work_email"]) or None,
+    }
+    _COMPANY_CSV_EXTRAS[name] = extras
 
     return {
         "name": name,
@@ -116,6 +168,7 @@ def map_csv_row_to_company(row: Mapping[str, str]) -> Optional[dict[str, Any]]:
         "locality": city,
         "employee_count": employee_count,
         "linkedin_url": _first_value(row, CSV_FIELD_ALIASES["linkedin_url"]) or None,
+        "csv_extras": extras,
     }
 
 
@@ -126,6 +179,7 @@ def load_actual_companies(csv_path: Optional[Path] = None) -> list[dict[str, Any
         return []
 
     companies: list[dict[str, Any]] = []
+    _COMPANY_CSV_EXTRAS.clear()
     with path.open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:

@@ -8,10 +8,11 @@ and HubSpot (buying signals) without live API calls.
 import hashlib
 from typing import Any, Dict
 
+from city_utils import extract_city_from_record
 from config.personas import pick_executive_title
 from models import Company
 from scoring import score_company
-from city_utils import extract_city_from_record, normalize_city_name
+from seed_data import get_company_csv_extras
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
 from services.verifier import verify_and_resolve_work_email
 
@@ -249,6 +250,7 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     linkedin_buyer = mock_linkedin_buyer(company, domain, index)
     hubspot = mock_hubspot_signals(domain, company)
     financials = mock_company_financials(company)
+    csv_extras = get_company_csv_extras(company.name)
 
     city = extract_city_from_record(
         {
@@ -264,10 +266,16 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     trust_opportunity_score = calculate_trust_opportunity_score(
         company, ai_signal, risk_signal, buying_signal, city_validated
     )
+    if csv_extras.get("signal_score") is not None:
+        trust_opportunity_score = int(csv_extras["signal_score"])
+
+    buyer_name = csv_extras.get("buyer_name") or linkedin_buyer["buyer_name"]
+    job_title = csv_extras.get("job_title") or linkedin_buyer["job_title"]
+    primary_email = csv_extras.get("work_email") or linkedin_buyer["work_email"]
 
     email_result = verify_and_resolve_work_email(
-        primary_email=linkedin_buyer["work_email"],
-        buyer_name=linkedin_buyer["buyer_name"],
+        primary_email=primary_email,
+        buyer_name=buyer_name,
         domain=domain,
         seed=_seed(company),
     )
@@ -289,8 +297,8 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "funding_stage": apollo.get("funding_stage") or financials["funding_stage"],
         "revenue_range": apollo.get("revenue_range") or financials["revenue_range"],
         "city_validated": city_validated,
-        "buyer_name": linkedin_buyer["buyer_name"],
-        "job_title": linkedin_buyer["job_title"],
+        "buyer_name": buyer_name,
+        "job_title": job_title,
         "work_email": email_result["work_email"],
         "email_status": email_result["email_status"],
         "linkedin_url": linkedin_buyer["buyer_linkedin_url"],
