@@ -2,6 +2,7 @@ import csv
 import io
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import List, Optional, Tuple
 
 from sqlalchemy.orm import Session
@@ -22,6 +23,19 @@ from seed_data import get_companies
 from services.enrichment import enrich_company
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
+
+def domain_from_website(website: str) -> str:
+    """Return bare hostname from a website URL."""
+    raw = str(website or "").strip()
+    if not raw:
+        return ""
+    if not raw.startswith(("http://", "https://")):
+        raw = f"https://{raw}"
+    parsed = urlparse(raw)
+    domain = (parsed.netloc or "").lower()
+    if domain.startswith("www."):
+        domain = domain[4:]
+    return domain or raw
 
 TARGET_COUNT = 25
 MAX_TARGET_ACCOUNTS = 1000
@@ -189,6 +203,7 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "company_name": account.company_name,
         "website": account.website,
         "company_website": account.website,
+        "domain": domain_from_website(account.website),
         "industry": account.industry,
         "city": city,
         "city_validated": account.city_validated,
@@ -277,6 +292,11 @@ def expand_reference_csv_row(row: dict) -> dict:
     if score not in (None, ""):
         expanded.setdefault("company_ai_signal", score)
         expanded.setdefault("signal_score", score)
+    website = str(row.get("company_website") or row.get("website") or "").strip()
+    if website:
+        expanded.setdefault("website", website)
+        expanded.setdefault("company_website", website)
+        expanded.setdefault("domain", domain_from_website(website))
     expanded.setdefault("funding", row.get("funding_status"))
     expanded["city"] = extract_city_from_record(row)
     expanded["city_validated"] = row.get("city_validated") == "TRUE"

@@ -2,6 +2,7 @@ import csv
 import traceback
 from collections import Counter
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -331,12 +332,39 @@ def _lead_score(lead: dict) -> float:
     return 0.0
 
 
+def _lead_website(lead: dict) -> str:
+    """Resolve website URL from lead record aliases."""
+    website = str(lead.get("company_website") or lead.get("website") or "").strip()
+    if website and not website.startswith(("http://", "https://")):
+        website = f"https://{website}"
+    return website
+
+
+def _lead_domain(lead: dict) -> str:
+    """Extract hostname from a lead website for dashboard contact display."""
+    website = _lead_website(lead)
+    if not website:
+        return ""
+    parsed = urlparse(website)
+    domain = (parsed.netloc or "").lower()
+    if domain.startswith("www."):
+        domain = domain[4:]
+    return domain or website
+
+
 def _enrich_lead_score_fields(lead: dict) -> dict:
-    """Expose score as both company_ai_signal and signal_score for the dashboard."""
+    """Normalize score and website fields for dashboard API consumers."""
     enriched = dict(lead)
     score = _lead_score(enriched)
     enriched["company_ai_signal"] = score
     enriched["signal_score"] = score
+    website = _lead_website(enriched)
+    if website:
+        enriched["website"] = website
+        enriched["company_website"] = website
+    domain = _lead_domain(enriched)
+    if domain:
+        enriched["domain"] = domain
     return enriched
 
 
@@ -390,7 +418,9 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
             {
                 "id": lead.get("id"),
                 "company": company,
-                "company_website": lead.get("company_website") or lead.get("website"),
+                "website": _lead_website(lead),
+                "company_website": _lead_website(lead),
+                "domain": _lead_domain(lead),
                 "industry": lead.get("industry"),
                 "city": _format_lead_city_display(raw_city),
                 "intent": _lead_intent(lead),
