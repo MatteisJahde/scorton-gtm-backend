@@ -16,6 +16,7 @@ from seed_data import get_company_csv_extras
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
 from services.email_verification import preverified_email_result
 from services.lead_validation import LEAD_STATUS_VERIFIED
+from services.url_utils import domain_from_website, normalize_website
 from services.verifier import verify_and_resolve_work_email
 
 BUYER_FIRST_NAMES = [
@@ -244,16 +245,22 @@ def _generate_notes(industry: str, ai_signal: int, risk_signal: int, seed: int) 
 
 def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     """Run the full enrichment workflow for one company."""
-    domain = _domain(company.name)
-    website = f"https://www.{domain}"
+    csv_extras = get_company_csv_extras(company.name)
+    stored_website = normalize_website(
+        csv_extras.get("website") or company.website or ""
+    )
+    if stored_website:
+        website = stored_website
+        domain = domain_from_website(website)
+    else:
+        domain = _domain(company.name)
+        website = normalize_website(f"https://www.{domain}")
 
     apollo = mock_apollo_enrich(domain, company)
     linkedin_co = mock_linkedin_company(company.name, domain)
     linkedin_buyer = mock_linkedin_buyer(company, domain, index)
     hubspot = mock_hubspot_signals(domain, company)
     financials = mock_company_financials(company)
-    csv_extras = get_company_csv_extras(company.name)
-
     city = extract_city_from_record(
         {
             "city": company.city,

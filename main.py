@@ -2,7 +2,6 @@ import csv
 import traceback
 from collections import Counter
 from pathlib import Path
-from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -45,10 +44,16 @@ from seed_data import (
     ACTUAL_COMPANIES_CSV,
     actual_companies_available,
     get_companies,
+    get_company_csv_extras,
     load_actual_companies_with_report,
 )
 from services.weekly_batch import pull_weekly_batch
 from services.domain_verification import verify_csv_bytes
+from services.url_utils import (
+    domain_from_website,
+    normalize_website,
+    website_display_status,
+)
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -333,23 +338,19 @@ def _lead_score(lead: dict) -> float:
 
 
 def _lead_website(lead: dict) -> str:
-    """Resolve website URL from lead record aliases."""
-    website = str(lead.get("company_website") or lead.get("website") or "").strip()
-    if website and not website.startswith(("http://", "https://")):
-        website = f"https://{website}"
-    return website
+    """Resolve website URL from CSV extras, then stored lead fields."""
+    company_name = str(lead.get("company_name") or lead.get("company") or "").strip()
+    csv_website = ""
+    if company_name:
+        csv_website = get_company_csv_extras(company_name).get("website") or ""
+    return normalize_website(
+        csv_website or lead.get("company_website") or lead.get("website") or ""
+    )
 
 
 def _lead_domain(lead: dict) -> str:
     """Extract hostname from a lead website for dashboard contact display."""
-    website = _lead_website(lead)
-    if not website:
-        return ""
-    parsed = urlparse(website)
-    domain = (parsed.netloc or "").lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
-    return domain or website
+    return domain_from_website(_lead_website(lead))
 
 
 def _enrich_lead_score_fields(lead: dict) -> dict:
@@ -359,12 +360,12 @@ def _enrich_lead_score_fields(lead: dict) -> dict:
     enriched["company_ai_signal"] = score
     enriched["signal_score"] = score
     website = _lead_website(enriched)
-    if website:
-        enriched["website"] = website
-        enriched["company_website"] = website
+    enriched["website"] = website
+    enriched["company_website"] = website
     domain = _lead_domain(enriched)
-    if domain:
-        enriched["domain"] = domain
+    enriched["domain"] = domain
+    enriched["website_status"] = website_display_status(website)
+    enriched["website_link"] = website if enriched["website_status"] == "ready" else ""
     return enriched
 
 
@@ -421,6 +422,10 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "website": _lead_website(lead),
                 "company_website": _lead_website(lead),
                 "domain": _lead_domain(lead),
+                "website_status": website_display_status(_lead_website(lead)),
+                "website_link": _lead_website(lead)
+                if website_display_status(_lead_website(lead)) == "ready"
+                else "",
                 "industry": lead.get("industry"),
                 "city": _format_lead_city_display(raw_city),
                 "intent": _lead_intent(lead),

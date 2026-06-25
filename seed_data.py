@@ -10,6 +10,7 @@ from typing import Any, Mapping, Optional
 
 from city_utils import normalize_city_name
 from services.lead_validation import LEAD_STATUS_VERIFIED, validate_lead
+from services.url_utils import normalize_website as _normalize_website_url
 from sorting_agent import ALLOWED_CITIES
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -100,15 +101,6 @@ def _parse_employee_count(raw: str) -> Optional[int]:
         return (low + high) // 2
     digits = re.sub(r"[^\d]", "", text)
     return int(digits) if digits else None
-
-
-def _normalize_website(raw: str) -> str:
-    website = (raw or "").strip()
-    if not website:
-        return ""
-    if not website.startswith(("http://", "https://")):
-        website = f"https://{website}"
-    return website
 
 
 def is_placeholder_company(name: object) -> bool:
@@ -209,7 +201,7 @@ def map_csv_row_to_company(
             _reject(report, name, "synthetic_or_placeholder_name")
         return None
 
-    website = _normalize_website(_first_value(row, CSV_FIELD_ALIASES["website"]))
+    website = _normalize_website_url(_first_value(row, CSV_FIELD_ALIASES["website"]))
     if not website:
         if report:
             _reject(report, name, "missing_website")
@@ -316,6 +308,7 @@ def map_csv_row_to_company(
         "contact_verification_status": validation["contact_verification_status"],
         "email_provider": validation.get("email_provider"),
         "contact_provider": validation.get("contact_provider"),
+        "website": website,
     }
     _COMPANY_CSV_EXTRAS[name] = extras
 

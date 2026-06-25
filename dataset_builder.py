@@ -2,7 +2,6 @@ import csv
 import io
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
 from typing import List, Optional, Tuple
 
 from sqlalchemy.orm import Session
@@ -21,21 +20,9 @@ from deduplication import (
 )
 from seed_data import get_companies
 from services.enrichment import enrich_company
+from services.url_utils import domain_from_website, normalize_website, website_display_status
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
-
-def domain_from_website(website: str) -> str:
-    """Return bare hostname from a website URL."""
-    raw = str(website or "").strip()
-    if not raw:
-        return ""
-    if not raw.startswith(("http://", "https://")):
-        raw = f"https://{raw}"
-    parsed = urlparse(raw)
-    domain = (parsed.netloc or "").lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
-    return domain or raw
 
 TARGET_COUNT = 25
 MAX_TARGET_ACCOUNTS = 1000
@@ -201,9 +188,13 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "id": account.id,
         "company_id": account.company_id,
         "company_name": account.company_name,
-        "website": account.website,
-        "company_website": account.website,
+        "website": normalize_website(account.website),
+        "company_website": normalize_website(account.website),
         "domain": domain_from_website(account.website),
+        "website_status": website_display_status(account.website),
+        "website_link": normalize_website(account.website)
+        if website_display_status(account.website) == "ready"
+        else "",
         "industry": account.industry,
         "city": city,
         "city_validated": account.city_validated,
@@ -237,10 +228,7 @@ def target_account_to_dict(account: TargetAccount) -> dict:
 
 def format_row_for_reference_csv(row: dict, *, export_id: int) -> dict:
     """Map internal target-account fields to the reference spreadsheet schema."""
-    website = row.get("company_website") or row.get("website") or ""
-    website = str(website).strip()
-    if website and not website.startswith(("http://", "https://")):
-        website = f"https://{website}"
+    website = normalize_website(row.get("company_website") or row.get("website") or "")
 
     city = extract_city_from_record(row) or ""
     city_validated = "TRUE" if city in ORIGINAL_TARGET_CITIES else "FALSE"
@@ -292,11 +280,13 @@ def expand_reference_csv_row(row: dict) -> dict:
     if score not in (None, ""):
         expanded.setdefault("company_ai_signal", score)
         expanded.setdefault("signal_score", score)
-    website = str(row.get("company_website") or row.get("website") or "").strip()
+    website = normalize_website(row.get("company_website") or row.get("website") or "")
     if website:
         expanded.setdefault("website", website)
         expanded.setdefault("company_website", website)
         expanded.setdefault("domain", domain_from_website(website))
+        expanded.setdefault("website_status", website_display_status(website))
+        expanded.setdefault("website_link", website if website_display_status(website) == "ready" else "")
     expanded.setdefault("funding", row.get("funding_status"))
     expanded["city"] = extract_city_from_record(row)
     expanded["city_validated"] = row.get("city_validated") == "TRUE"

@@ -10,6 +10,7 @@ from seed_data import (
     verification_report_dict,
 )
 from sorting_agent import ALLOWED_CITIES
+from services.url_utils import normalize_website
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
 
 ALLOWED_INDUSTRIES = {"Financial Services", "Insurance", "Accounting"}
@@ -74,7 +75,7 @@ def ingest_companies(db: Session) -> dict:
             continue
 
         employee_count = company.get("employee_count")
-        website = company.get("website") or ""
+        website = normalize_website(company.get("website") or "")
         linkedin_url = company.get("linkedin_url")
 
         company_obj = Company(
