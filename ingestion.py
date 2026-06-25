@@ -11,6 +11,7 @@ from seed_data import (
 )
 from sorting_agent import ALLOWED_CITIES
 from services.url_utils import normalize_website
+from services.industry_filter import passes_financial_icp_filter
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
 
 ALLOWED_INDUSTRIES = {"Financial Services", "Insurance", "Accounting"}
@@ -24,7 +25,14 @@ def _passes_filters(company: dict) -> bool:
     city = normalize_city_name(company.get("city") or company.get("locality"))
     if not city or city not in ALLOWED_CITIES:
         return False
-    if company["industry"] not in ALLOWED_INDUSTRIES:
+    accepted, _reason = passes_financial_icp_filter(
+        {
+            "company": company.get("name"),
+            "industry": company.get("industry"),
+            "website": company.get("website"),
+        }
+    )
+    if not accepted:
         return False
     count = company.get("employee_count")
     if count is None or count < MIN_EMPLOYEE_COUNT or count > MAX_EMPLOYEE_COUNT:

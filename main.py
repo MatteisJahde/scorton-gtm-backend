@@ -49,6 +49,7 @@ from seed_data import (
 )
 from services.weekly_batch import pull_weekly_batch
 from services.domain_verification import verify_csv_bytes
+from services.industry_filter import passes_financial_icp_filter
 from services.url_utils import (
     domain_from_website,
     normalize_website,
@@ -510,11 +511,14 @@ def _serialize_lead_records(df: pd.DataFrame) -> list[dict]:
 
 
 def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
-    """Exclude only non-target cities; keep leads with unknown/null city."""
+    """Exclude non-target cities and non-financial / blocklisted companies."""
     filtered: list[dict] = []
     for lead in leads:
         city = _raw_lead_city(lead)
         if city and city not in ORIGINAL_TARGET_CITIES:
+            continue
+        accepted, _reason = passes_financial_icp_filter(lead)
+        if not accepted:
             continue
         normalized = dict(lead)
         normalized["city"] = city

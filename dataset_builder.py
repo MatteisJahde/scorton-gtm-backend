@@ -21,6 +21,7 @@ from deduplication import (
 from seed_data import get_companies
 from services.enrichment import enrich_company
 from services.url_utils import domain_from_website, normalize_website, website_display_status
+from services.industry_filter import passes_financial_icp_filter
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
 
@@ -342,6 +343,17 @@ def _qualifying_companies_from_db(db: Session) -> List[Company]:
         )
         rows = sort_companies_for_final_cut(rows)
         rows = [row for row in rows if not is_placeholder_company(row.name)]
+        rows = [
+            row
+            for row in rows
+            if passes_financial_icp_filter(
+                {
+                    "company": row.name,
+                    "industry": row.industry,
+                    "website": row.website,
+                }
+            )[0]
+        ]
         companies.extend(rows[:PER_CITY_LIMIT])
 
     return companies[:MAX_TARGET_ACCOUNTS]
@@ -360,6 +372,10 @@ def build_target_dataset(db: Session) -> dict:
     unverified_excluded = 0
     for index, company in enumerate(companies):
         enriched = enrich_company(company, index)
+        accepted, _reason = passes_financial_icp_filter(enriched)
+        if not accepted:
+            unverified_excluded += 1
+            continue
         if enriched.get("lead_verification_status") != LEAD_STATUS_VERIFIED:
             unverified_excluded += 1
             continue

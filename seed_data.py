@@ -11,6 +11,7 @@ from typing import Any, Mapping, Optional
 from city_utils import normalize_city_name
 from services.lead_validation import LEAD_STATUS_VERIFIED, validate_lead
 from services.url_utils import normalize_website as _normalize_website_url
+from services.industry_filter import passes_financial_icp_filter
 from sorting_agent import ALLOWED_CITIES
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -212,9 +213,12 @@ def map_csv_row_to_company(
         if report:
             _reject(report, name, "missing_industry")
         return None
-    if industry not in ALLOWED_INDUSTRIES:
+    accepted, rejection = passes_financial_icp_filter(
+        {"company": name, "industry": industry, "website": website}
+    )
+    if not accepted:
         if report:
-            _reject(report, name, "industry_not_allowed", detail=industry)
+            _reject(report, name, rejection or "industry_not_allowed", detail=industry)
         return None
 
     raw_city = _first_value(row, CSV_FIELD_ALIASES["city"])
