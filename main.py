@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -47,6 +47,7 @@ from seed_data import (
     load_actual_companies_with_report,
 )
 from services.weekly_batch import pull_weekly_batch
+from services.domain_verification import verify_csv_bytes
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -732,6 +733,55 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
             ),
         },
     }
+
+
+@api_router.post("/verify-leads-csv")
+async def api_verify_leads_csv(file: UploadFile = File(...)):
+    """
+    Temporary endpoint: verify website domains in an uploaded leads CSV.
+
+    Accepts a CSV with a `website` column, checks each URL (HEAD then GET),
+    and returns only rows with active domains.
+    """
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Upload a .csv file.")
+
+    payload = await file.read()
+    if not payload:
+        raise HTTPException(status_code=400, detail="Uploaded CSV is empty.")
+
+    try:
+        result = verify_csv_bytes(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Domain verification failed: {exc}",
+        ) from exc
+
+    summary = result["summary"]
+    print(
+        f"[verify-leads-csv] read={summary['read']} kept={summary['kept']} "
+        f"discarded={summary['discarded']}",
+        flush=True,
+    )
+
+    return json_success(
+        {
+            "csv": result["csv"],
+            "summary": summary,
+            "discarded": [
+                {
+                    "company": row.get("company"),
+                    "website": row.get("website"),
+                    "validation_status": row.get("validation_status"),
+                    "validation_detail": row.get("validation_detail"),
+                }
+                for row in result["discarded_rows"]
+            ],
+        }
+    )
 
 
 app.include_router(api_router)
