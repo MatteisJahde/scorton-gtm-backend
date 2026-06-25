@@ -315,6 +315,7 @@ def companies(db: Session = Depends(get_db)):
 def _lead_score(lead: dict) -> float:
     """Resolve a comparable score from DB rows or reference CSV rows."""
     for key in (
+        "signal_score",
         "score",
         "trust_opportunity_score",
         "qualification_score",
@@ -328,6 +329,15 @@ def _lead_score(lead: dict) -> float:
             except (TypeError, ValueError):
                 continue
     return 0.0
+
+
+def _enrich_lead_score_fields(lead: dict) -> dict:
+    """Expose score as both company_ai_signal and signal_score for the dashboard."""
+    enriched = dict(lead)
+    score = _lead_score(enriched)
+    enriched["company_ai_signal"] = score
+    enriched["signal_score"] = score
+    return enriched
 
 
 def _filter_high_intent_leads(leads: list[dict]) -> list[dict]:
@@ -385,6 +395,7 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "city": _format_lead_city_display(raw_city),
                 "intent": _lead_intent(lead),
                 LEADS_SUMMARY_SCORE_FIELD: _lead_score(lead),
+                "signal_score": _lead_score(lead),
                 "buyer_name": lead.get("buyer_name"),
                 "job_title": lead.get("job_title"),
                 "work_email": lead.get("work_email"),
@@ -531,7 +542,7 @@ def get_all_leads(db: Session) -> list[dict]:
 
         leads = _filter_allowed_leads(leads)
         unique_leads, _report = deduplicate_company_records(leads, label="api_leads")
-        return unique_leads
+        return [_enrich_lead_score_fields(lead) for lead in unique_leads]
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -547,9 +558,10 @@ def get_unique_target_dataset(
 ) -> list[dict]:
     leads = _load_leads_from_db(db)
     unique_leads, _report = deduplicate_company_records(leads, label="target_dataset")
+    enriched = [_enrich_lead_score_fields(lead) for lead in unique_leads]
     if limit is None:
-        return unique_leads[offset:]
-    return unique_leads[offset : offset + limit]
+        return enriched[offset:]
+    return enriched[offset : offset + limit]
 
 
 def get_qualified_companies(db: Session) -> list[dict]:
@@ -568,6 +580,7 @@ def api_dashboard_metrics(db: Session = Depends(get_db)):
                 "trust_opportunity_score",
                 "qualification_score",
                 "company_ai_signal",
+                "signal_score",
                 "ai_signal",
             ],
             "high_intent_rule": f"score >= {HIGH_INTENT_SCORE_THRESHOLD}",

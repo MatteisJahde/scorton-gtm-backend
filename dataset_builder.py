@@ -208,6 +208,8 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "linkedin_url": account.linkedin_url,
         "company_linkedin_url": account.company_linkedin_url,
         "ai_signal": account.ai_signal,
+        "company_ai_signal": account.trust_opportunity_score or account.ai_signal or 0,
+        "signal_score": account.trust_opportunity_score or account.ai_signal or 0,
         "risk_signal": account.risk_signal,
         "buying_signal": account.buying_signal,
         "trust_opportunity_score": account.trust_opportunity_score,
@@ -271,6 +273,10 @@ def expand_reference_csv_row(row: dict) -> dict:
     expanded = dict(row)
     expanded.setdefault("company_name", row.get("company"))
     expanded.setdefault("ai_signal", row.get("company_ai_signal"))
+    score = row.get("company_ai_signal") or row.get("ai_signal") or row.get("signal_score")
+    if score not in (None, ""):
+        expanded.setdefault("company_ai_signal", score)
+        expanded.setdefault("signal_score", score)
     expanded.setdefault("funding", row.get("funding_status"))
     expanded["city"] = extract_city_from_record(row)
     expanded["city_validated"] = row.get("city_validated") == "TRUE"
