@@ -6,6 +6,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import httpx
 import pandas as pd
 import uvicorn
 from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, UploadFile
@@ -60,6 +61,10 @@ from services.url_utils import (
 )
 from services.contact_fields import attach_contact_aliases
 from services.suppression_list import add_suppression, list_suppressions, refresh_suppression_cache
+from services.zerobounce_client import get_zerobounce_api_key
+
+ZEROBOUNCE_VALIDATE_URL = "https://api.zerobounce.net/v2/validate"
+ZEROBOUNCE_RATE_LIMIT_DELAY_SECONDS = 0.1
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -183,34 +188,130 @@ DATA_FILE_PATH = "actual_companies.csv"
 _db_initialization_complete = False
 
 
-def initialize_database(data_file_path: str) -> None:
-    """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
-    global _db_initialization_complete
+def _email_status_from_zerobounce_payload(payload: dict[str, Any]) -> str:
+    """Map ZeroBounce API status to dashboard email_status labels."""
+    status = str(payload.get("status") or "").lower()
+    if status == "valid":
+        return "Verified"
+    if status == "catch-all":
+        return "Review"
+    if status in {"invalid", "spamtrap", "abuse", "do_not_mail"}:
+        return "Invalid"
+    if status == "unknown":
+        return "Unverified"
+    return "Risky"
+
+
+def _lead_status_from_email_status(email_status: str) -> str:
+    if email_status == "Verified":
+        return "Verified"
+    if email_status == "Review":
+        return "Review"
+    return "Unverified"
+
+
+async def verify_email_with_zerobounce(email: str) -> dict[str, Any]:
+    """Validate a single email via the ZeroBounce API (async)."""
+    normalized = (email or "").strip()
+    if not normalized:
+        return {
+            "email": normalized,
+            "email_status": "Invalid",
+            "zerobounce_status": "missing_email",
+            "qualified": False,
+        }
+
+    api_key = get_zerobounce_api_key()
+    if not api_key:
+        print("[zerobounce] ZEROBOUNCE_API_KEY is not configured — skipping validation", flush=True)
+        return {
+            "email": normalized,
+            "email_status": "Unverified",
+            "zerobounce_status": "missing_api_key",
+            "qualified": False,
+        }
+
     try:
-        print("[database] Step 1/4: creating tables...", flush=True)
-        Base.metadata.create_all(bind=engine)
-        print("[database] Step 2/4: running migrations...", flush=True)
-        migrate_db()
-        print("[database] Step 3/4: loading suppression list...", flush=True)
-        refresh_suppression_cache()
-        print("[database] Step 4/4: ingesting CSV data...", flush=True)
-        _load_seed_data(data_file_path)
-        _db_initialization_complete = True
-        print("[database] Initialization completed successfully.", flush=True)
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            response = await client.get(
+                ZEROBOUNCE_VALIDATE_URL,
+                params={"api_key": api_key, "email": normalized},
+            )
+        response.raise_for_status()
+        payload = response.json()
+        if payload.get("error"):
+            raise RuntimeError(str(payload["error"]))
+
+        email_status = _email_status_from_zerobounce_payload(payload)
+        return {
+            "email": normalized,
+            "email_status": email_status,
+            "zerobounce_status": payload.get("status"),
+            "zerobounce_sub_status": payload.get("sub_status"),
+            "verification_status": str(payload.get("status") or "").lower(),
+            "qualified": email_status in {"Verified", "Review"},
+            "zerobounce": payload,
+        }
     except Exception as exc:
-        print(f"[database] Initialization FAILED: {exc}", flush=True)
+        print(f"[zerobounce] Verification failed for {normalized}: {exc}", flush=True)
         traceback.print_exc()
+        return {
+            "email": normalized,
+            "email_status": "Unverified",
+            "zerobounce_status": "error",
+            "verification_status": "error",
+            "qualified": False,
+            "error": str(exc),
+        }
 
 
-def _load_seed_data(data_file_path: str) -> None:
-    """Force-ingest companies from CSV and rebuild the target dataset."""
-    csv_path = Path(__file__).resolve().parent / data_file_path
-    print(f"[database] CSV path: {csv_path}", flush=True)
+async def _verify_leads_with_zerobounce(companies: list[dict[str, Any]]) -> None:
+    """Run ZeroBounce validation for every CSV lead before database ingest."""
+    total = len(companies)
+    print(f"[zerobounce] Validating {total} lead emails...", flush=True)
 
-    if not csv_path.exists():
-        print(f"[database] CSV not found — skipping ingest: {csv_path}", flush=True)
-        return
+    for index, company in enumerate(companies, start=1):
+        company_name = str(company.get("name") or "").strip()
+        extras = get_company_csv_extras(company_name)
+        work_email = str(extras.get("work_email") or "").strip()
 
+        if not work_email:
+            print(f"[zerobounce] ({index}/{total}) {company_name}: no work_email — skipped", flush=True)
+            continue
+
+        result = await verify_email_with_zerobounce(work_email)
+        email_status = str(result.get("email_status") or "Unverified")
+        extras["email_status"] = email_status
+        extras["verification_status"] = result.get("verification_status")
+        extras["email_provider"] = "zerobounce"
+        extras["zerobounce_status"] = result.get("zerobounce_status")
+        extras["zerobounce_sub_status"] = result.get("zerobounce_sub_status")
+        extras["zerobounce"] = result.get("zerobounce")
+        extras["lead_verification_status"] = _lead_status_from_email_status(email_status)
+
+        company["lead_verification_status"] = extras["lead_verification_status"]
+        company["csv_extras"] = extras
+
+        print(
+            f"[zerobounce] ({index}/{total}) {company_name} <{work_email}> -> {email_status}",
+            flush=True,
+        )
+
+        if index < total:
+            await asyncio.sleep(ZEROBOUNCE_RATE_LIMIT_DELAY_SECONDS)
+
+
+def _setup_database_schema() -> None:
+    print("[database] Step 1/3: creating tables...", flush=True)
+    Base.metadata.create_all(bind=engine)
+    print("[database] Step 2/3: running migrations...", flush=True)
+    migrate_db()
+    print("[database] Step 3/3: loading suppression list...", flush=True)
+    refresh_suppression_cache()
+
+
+def _persist_companies_to_database(companies: list[dict[str, Any]]) -> None:
+    """Ingest pre-validated companies and rebuild the target dataset."""
     db = SessionLocal()
     try:
         print("[database] Clearing existing company records...", flush=True)
@@ -219,14 +320,8 @@ def _load_seed_data(data_file_path: str) -> None:
         db.query(Company).delete()
         db.commit()
 
-        print("[database] Parsing CSV rows...", flush=True)
-        companies, _report = load_actual_companies_with_report(csv_path)
-        if not companies:
-            print("[database] No valid rows found in CSV.", flush=True)
-            return
-
         print(f"[database] Ingesting {len(companies)} companies...", flush=True)
-        ingest_result = ingest_companies(db)
+        ingest_result = ingest_companies(db, companies=companies)
         if ingest_result.get("error"):
             print(f"[database] Ingest failed: {ingest_result}", flush=True)
             return
@@ -247,11 +342,53 @@ def _load_seed_data(data_file_path: str) -> None:
             flush=True,
         )
     except Exception as exc:
-        print(f"[database] CSV load FAILED: {exc}", flush=True)
+        print(f"[database] Persist FAILED: {exc}", flush=True)
         traceback.print_exc()
         raise
     finally:
         db.close()
+
+
+async def _initialize_database_async(data_file_path: str) -> None:
+    """Async startup path: schema setup → CSV parse → ZeroBounce → DB persist."""
+    global _db_initialization_complete
+    csv_path = Path(__file__).resolve().parent / data_file_path
+    print(f"[database] CSV path: {csv_path}", flush=True)
+
+    if not csv_path.exists():
+        print(f"[database] CSV not found — skipping ingest: {csv_path}", flush=True)
+        return
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _setup_database_schema)
+
+    print("[database] Parsing CSV rows...", flush=True)
+    companies, _report = await loop.run_in_executor(
+        None, load_actual_companies_with_report, csv_path
+    )
+    if not companies:
+        print("[database] No valid rows found in CSV.", flush=True)
+        return
+
+    await _verify_leads_with_zerobounce(companies)
+    await loop.run_in_executor(None, _persist_companies_to_database, companies)
+
+    _db_initialization_complete = True
+    print("[database] Initialization completed successfully.", flush=True)
+
+
+def initialize_database(data_file_path: str) -> None:
+    """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
+    try:
+        asyncio.run(_initialize_database_async(data_file_path))
+    except Exception as exc:
+        print(f"[database] Initialization FAILED: {exc}", flush=True)
+        traceback.print_exc()
+
+
+def _load_seed_data(data_file_path: str) -> None:
+    """Backward-compatible sync CSV load wrapper."""
+    initialize_database(data_file_path)
 
 
 def load_data(data_file_path: str) -> None:
@@ -263,8 +400,7 @@ async def _run_background_initialization() -> None:
     """Load CSV data after the HTTP server is already accepting connections."""
     try:
         print("[startup] Background CSV initialization starting...", flush=True)
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, initialize_database, DATA_FILE_PATH)
+        await _initialize_database_async(DATA_FILE_PATH)
         print("[startup] Background CSV initialization finished.", flush=True)
     except Exception as exc:
         print(f"[startup] Background CSV initialization FAILED: {exc}", flush=True)
