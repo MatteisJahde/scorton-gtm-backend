@@ -16,10 +16,10 @@ from seed_data import get_company_csv_extras
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
 from services.contact_enrichment import enrich_contact_for_company
 from services.contact_fields import attach_contact_aliases, CONTACT_STATUS_NO_CONTACT
+from services.email_hygiene import run_email_hygiene_pipeline
 from services.email_verification import preverified_email_result
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from services.url_utils import domain_from_website, normalize_website
-from services.verifier import verify_and_resolve_work_email
 
 BUYER_FIRST_NAMES = [
     "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Jamie", "Quinn",
@@ -316,16 +316,24 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
             email_status=contact_payload.get("email_status") or csv_extras.get("email_status"),
         )
     else:
-        email_result = verify_and_resolve_work_email(
-            primary_email=primary_email,
-            buyer_name=buyer_name,
-            domain=domain,
-            seed=_seed(company),
-        )
+        hygiene = run_email_hygiene_pipeline(primary_email, seed=_seed(company))
+        email_result = {
+            "work_email": primary_email if (hygiene.get("qualified") or hygiene.get("needs_review")) else "",
+            "email_status": hygiene.get("email_status"),
+            "qualified": bool(hygiene.get("qualified")),
+            "needs_review": bool(hygiene.get("needs_review")),
+            "verification_status": hygiene.get("verification_status"),
+            "verification": hygiene.get("verification") or {},
+            "attempts": hygiene.get("attempts") or [],
+            "notes_flag": "Review" if hygiene.get("needs_review") else None,
+        }
         if contact_payload.get("contact_status") != CONTACT_STATUS_NO_CONTACT:
-            lead_verification_status = (
-                LEAD_STATUS_VERIFIED if email_result.get("qualified") else "Unverified"
-            )
+            if hygiene.get("qualified"):
+                lead_verification_status = LEAD_STATUS_VERIFIED
+            elif hygiene.get("needs_review"):
+                lead_verification_status = "Review"
+            else:
+                lead_verification_status = "Unverified"
 
     linkedin_buyer_url = contact_payload.get("linkedin_url") or ""
     if not linkedin_buyer_url:

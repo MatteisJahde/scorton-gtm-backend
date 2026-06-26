@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Enrich contact fields in scorton_final_ranked_leads.csv via Hunter.io / PDL.
+Enrich contact fields in scorton_final_ranked_leads.csv via Hunter.io / PDL
+with multi-stage email hygiene validation.
 
 Usage:
   python scripts/enrich_ranked_leads_contacts.py \\
@@ -10,8 +11,12 @@ Usage:
 Environment:
   HUNTER_API_KEY or HUNTER_IO_API_KEY
   PDL_API_KEY
+  ZEROBOUNCE_API_KEY (SMTP waterfall when Hunter is inconclusive)
   CONTACT_ENRICHMENT_PROVIDER=auto|hunter|pdl
   CONTACT_ENRICHMENT_DROP_IF_MISSING=true|false
+  EMAIL_ROLE_ACCOUNT_ACTION=drop|review
+  HUNTER_MIN_CONTACT_CONFIDENCE=70
+  EMAIL_HUNTER_MIN_SCORE=70
 """
 
 from __future__ import annotations
@@ -27,6 +32,8 @@ if str(ROOT) not in sys.path:
 
 from services.contact_enrichment import enrich_contact_for_company, should_drop_lead_without_contact
 from services.contact_fields import attach_contact_aliases
+from services.email_hygiene import run_email_hygiene_pipeline
+from services.suppression_list import refresh_suppression_cache
 from services.url_utils import domain_from_website, normalize_website
 
 
@@ -44,6 +51,13 @@ def enrich_row(row: dict) -> dict | None:
     domain = _first(row, "domain") or domain_from_website(website)
     industry = _first(row, "industry", "Industry") or "Financial Services"
 
+    existing_email = _first(row, "work_email", "verified_email", "Email")
+    if existing_email:
+        hygiene = run_email_hygiene_pipeline(existing_email)
+        if not hygiene.get("qualified") and not hygiene.get("needs_review"):
+            if should_drop_lead_without_contact():
+                return None
+
     contact = enrich_contact_for_company(
         company_name=company_name,
         website=website,
@@ -51,7 +65,7 @@ def enrich_row(row: dict) -> dict | None:
         industry=industry,
         buyer_name=_first(row, "buyer_name", "contact_name", "Reach Out To"),
         job_title=_first(row, "job_title", "contact_role", "Title"),
-        work_email=_first(row, "work_email", "verified_email", "Email"),
+        work_email=existing_email,
         lead_verification_status=row.get("lead_verification_status"),
     )
     if contact is None:
@@ -72,6 +86,8 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=0, help="Process only N rows (0 = all)")
     args = parser.parse_args()
 
+    refresh_suppression_cache()
+
     input_path = args.input.expanduser()
     output_path = (args.output or input_path.with_stem(input_path.stem + "_enriched")).expanduser()
 
@@ -83,8 +99,11 @@ def main() -> None:
             "contact_role",
             "verified_email",
             "contact_status",
+            "needs_review",
             "enrichment_provider",
             "contact_verification_status",
+            "verification_status",
+            "email_status",
         ):
             if extra not in fieldnames:
                 fieldnames.append(extra)
@@ -93,6 +112,7 @@ def main() -> None:
         dropped = 0
         no_contact = 0
         verified = 0
+        review = 0
 
         for index, row in enumerate(reader):
             if args.limit and index >= args.limit:
@@ -107,6 +127,8 @@ def main() -> None:
                 no_contact += 1
             elif result.get("contact_status") == "verified":
                 verified += 1
+            elif result.get("contact_status") == "review" or result.get("needs_review"):
+                review += 1
             enriched_rows.append(result)
 
     with output_path.open("w", encoding="utf-8", newline="") as handle:
@@ -122,6 +144,7 @@ def main() -> None:
             "dropped": dropped,
             "no_contact_marked": no_contact,
             "verified_contacts": verified,
+            "review_bucket": review,
             "drop_if_missing": should_drop_lead_without_contact(),
         }
     )

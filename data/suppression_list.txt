@@ -1,0 +1,2 @@
+# One email per line. Lines starting with # are ignored.
+# Hard-bounced or do-not-mail addresses are listed here and skipped during enrichment.

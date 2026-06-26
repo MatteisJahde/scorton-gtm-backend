@@ -1,200 +1,70 @@
 """
 Lead email verification for CSV ingestion and enrichment.
 
-Uses Hunter.io when ``HUNTER_API_KEY`` is set; otherwise falls back to the
-local verifier mock (syntax + deterministic deliverability simulation).
+Delegates to the multi-stage ``email_hygiene`` pipeline (syntax → suppression →
+role filter → SMTP verification with Hunter/ZeroBounce waterfall).
 """
 
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from services.hunter_client import HunterVerificationError, get_hunter_api_key, hunter_verify_email
-from services.verifier import (
-    check_email_syntax,
-    mock_zerobounce_verify,
-    passes_qualification,
-    _status_from_result,
-)
-from services.zerobounce_client import (
-    ZeroBounceVerificationError,
-    get_zerobounce_api_key,
-    zerobounce_verify_email,
+from services.email_hygiene import (
+    QUALIFIED_STATUSES,
+    REVIEW_STATUSES,
+    STATUS_CATCH_ALL,
+    STATUS_REVIEW,
+    STATUS_SYNTAX_ERROR,
+    STATUS_SUPPRESSED,
+    STATUS_ROLE_ACCOUNT,
+    run_email_hygiene_pipeline,
 )
 
-# Normalized statuses stored on leads / target dataset exports.
+# Backward-compatible aliases
 VERIFICATION_STATUS_VERIFIED = "verified"
 VERIFICATION_STATUS_CATCH_ALL = "catch_all"
+VERIFICATION_STATUS_REVIEW = "review"
 VERIFICATION_STATUS_RISKY = "risky"
 VERIFICATION_STATUS_INVALID = "invalid"
 VERIFICATION_STATUS_UNKNOWN = "unknown"
 VERIFICATION_STATUS_SYNTAX_ERROR = "syntax_error"
 VERIFICATION_STATUS_ERROR = "error"
+VERIFICATION_STATUS_SUPPRESSED = "suppressed"
+VERIFICATION_STATUS_ROLE_ACCOUNT = "role_account"
 
-QUALIFIED_VERIFICATION_STATUSES = {
-    VERIFICATION_STATUS_VERIFIED,
-    VERIFICATION_STATUS_CATCH_ALL,
-}
+QUALIFIED_VERIFICATION_STATUSES = set(QUALIFIED_STATUSES)
 
 
 def _email_status_from_verification_status(verification_status: str) -> str:
-    mapping = {
-        VERIFICATION_STATUS_VERIFIED: "Verified",
-        VERIFICATION_STATUS_CATCH_ALL: "Catch-all",
-        VERIFICATION_STATUS_RISKY: "Risky",
-        VERIFICATION_STATUS_INVALID: "Invalid",
-        VERIFICATION_STATUS_UNKNOWN: "Unverified",
-        VERIFICATION_STATUS_SYNTAX_ERROR: "Syntax Error",
-        VERIFICATION_STATUS_ERROR: "Unverified",
-    }
-    return mapping.get(verification_status, "Unverified")
+    from services.email_hygiene import _email_status_label
 
-
-def _verification_status_from_hunter(hunter_result: Dict[str, Any]) -> str:
-    status = hunter_result.get("status") or ""
-    result = hunter_result.get("result") or ""
-
-    if hunter_result.get("disposable"):
-        return VERIFICATION_STATUS_INVALID
-
-    if status == "valid" and result == "deliverable":
-        return VERIFICATION_STATUS_VERIFIED
-
-    if status == "accept_all" or hunter_result.get("accept_all"):
-        return VERIFICATION_STATUS_CATCH_ALL
-
-    if status in {"invalid", "disposable"} or result == "undeliverable":
-        return VERIFICATION_STATUS_INVALID
-
-    if result == "risky" or status == "webmail":
-        return VERIFICATION_STATUS_RISKY
-
-    return VERIFICATION_STATUS_UNKNOWN
-
-
-def _verification_status_from_zerobounce(zb_result: Dict[str, Any]) -> str:
-    status = (zb_result.get("status") or "").lower()
-    if status == "valid":
-        return VERIFICATION_STATUS_VERIFIED
-    if status == "catch-all":
-        return VERIFICATION_STATUS_CATCH_ALL
-    if status in {"invalid", "spamtrap", "abuse", "do_not_mail"}:
-        return VERIFICATION_STATUS_INVALID
-    if status == "unknown":
-        return VERIFICATION_STATUS_UNKNOWN
-    return VERIFICATION_STATUS_RISKY
-
-
-def _verification_status_from_mock(mock_result: Dict[str, Any]) -> str:
-    email_status = _status_from_result(mock_result)
-    mapping = {
-        "Verified": VERIFICATION_STATUS_VERIFIED,
-        "Catch-all": VERIFICATION_STATUS_CATCH_ALL,
-        "Risky": VERIFICATION_STATUS_RISKY,
-        "Invalid": VERIFICATION_STATUS_INVALID,
-        "Syntax Error": VERIFICATION_STATUS_SYNTAX_ERROR,
-        "Unverified": VERIFICATION_STATUS_UNKNOWN,
-    }
-    return mapping.get(email_status, VERIFICATION_STATUS_UNKNOWN)
+    return _email_status_label(verification_status)
 
 
 def verify_lead_email(email: str, *, seed: int = 0) -> Dict[str, Any]:
     """
-    Verify a lead work email for ingestion.
+    Verify a lead work email through the full hygiene pipeline.
 
     Returns:
-        qualified: whether the row should be kept
-        verification_status: normalized status for output
-        email_status: human-readable status (legacy field)
-        provider: hunter | mock
-        verification: raw provider payload
+        qualified: SMTP-verified personal mailbox (safe for automated outreach)
+        needs_review: catch-all or role-account review bucket
+        verification_status, email_status, provider, stages
     """
-    normalized_email = (email or "").strip()
-    if not normalized_email:
-        return {
-            "email": normalized_email,
-            "qualified": False,
-            "verification_status": VERIFICATION_STATUS_INVALID,
-            "email_status": "Invalid",
-            "provider": None,
-            "verification": {},
-            "detail": "missing_email",
-        }
-
-    if not check_email_syntax(normalized_email):
-        return {
-            "email": normalized_email,
-            "qualified": False,
-            "verification_status": VERIFICATION_STATUS_SYNTAX_ERROR,
-            "email_status": "Syntax Error",
-            "provider": "syntax",
-            "verification": {"reason": "syntax_error"},
-            "detail": "syntax_error",
-        }
-
-    hunter_key = get_hunter_api_key()
-    if hunter_key:
-        try:
-            hunter_result = hunter_verify_email(normalized_email, api_key=hunter_key)
-            verification_status = _verification_status_from_hunter(hunter_result)
-            qualified = verification_status in QUALIFIED_VERIFICATION_STATUSES
-            return {
-                "email": normalized_email,
-                "qualified": qualified,
-                "verification_status": verification_status,
-                "email_status": _email_status_from_verification_status(verification_status),
-                "provider": "hunter",
-                "verification": hunter_result,
-                "detail": hunter_result.get("result") or hunter_result.get("status"),
-            }
-        except HunterVerificationError as exc:
-            return {
-                "email": normalized_email,
-                "qualified": False,
-                "verification_status": VERIFICATION_STATUS_ERROR,
-                "email_status": "Unverified",
-                "provider": "hunter",
-                "verification": {"error": str(exc)},
-                "detail": str(exc),
-            }
-
-    zerobounce_key = get_zerobounce_api_key()
-    if zerobounce_key:
-        try:
-            zb_result = zerobounce_verify_email(normalized_email, api_key=zerobounce_key)
-            verification_status = _verification_status_from_zerobounce(zb_result)
-            qualified = verification_status in QUALIFIED_VERIFICATION_STATUSES
-            return {
-                "email": normalized_email,
-                "qualified": qualified,
-                "verification_status": verification_status,
-                "email_status": _email_status_from_verification_status(verification_status),
-                "provider": "zerobounce",
-                "verification": zb_result,
-                "detail": zb_result.get("status"),
-            }
-        except ZeroBounceVerificationError as exc:
-            return {
-                "email": normalized_email,
-                "qualified": False,
-                "verification_status": VERIFICATION_STATUS_ERROR,
-                "email_status": "Unverified",
-                "provider": "zerobounce",
-                "verification": {"error": str(exc)},
-                "detail": str(exc),
-            }
-
-    mock_result = mock_zerobounce_verify(normalized_email, seed=seed)
-    verification_status = _verification_status_from_mock(mock_result)
-    qualified = passes_qualification(mock_result)
+    result = run_email_hygiene_pipeline(email, seed=seed)
+    status = result.get("verification_status") or VERIFICATION_STATUS_UNKNOWN
     return {
-        "email": normalized_email,
-        "qualified": qualified,
-        "verification_status": verification_status,
-        "email_status": _status_from_result(mock_result),
-        "provider": "mock",
-        "verification": mock_result,
-        "detail": mock_result.get("reason"),
+        "email": result.get("email") or (email or "").strip(),
+        "qualified": bool(result.get("qualified")),
+        "needs_review": bool(result.get("needs_review")),
+        "verification_status": status,
+        "email_status": result.get("email_status"),
+        "provider": result.get("provider"),
+        "verification": result.get("verification") or {},
+        "detail": result.get("detail"),
+        "stages": result.get("stages") or [],
+        "smtp_check": result.get("smtp_check"),
+        "attempts": result.get("attempts") or [],
+        "verification_depth": result.get("verification_depth"),
     }
 
 
@@ -206,12 +76,14 @@ def preverified_email_result(
 ) -> Dict[str, Any]:
     """Build enrichment email_result dict from CSV pre-verification."""
     status = verification_status or VERIFICATION_STATUS_UNKNOWN
+    needs_review = status in REVIEW_STATUSES or status == VERIFICATION_STATUS_CATCH_ALL
     return {
         "work_email": work_email,
         "email_status": email_status or _email_status_from_verification_status(status),
         "verification_status": status,
         "qualified": status in QUALIFIED_VERIFICATION_STATUSES,
+        "needs_review": needs_review,
         "verification": {"source": "csv_preverified", "verification_status": status},
         "attempts": [],
-        "notes_flag": None,
+        "notes_flag": "Review" if needs_review else None,
     }

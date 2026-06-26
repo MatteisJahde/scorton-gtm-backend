@@ -4,6 +4,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.exc import OperationalError
 
 from database import engine
+from models import EmailSuppression
 
 
 def _is_duplicate_column_error(exc: BaseException) -> bool:
@@ -104,3 +105,6 @@ def migrate_db() -> None:
             except Exception:
                 # Existing duplicate rows prevent index creation until data is cleaned.
                 pass
+
+    if "email_suppressions" not in table_names:
+        EmailSuppression.__table__.create(bind=engine, checkfirst=True)

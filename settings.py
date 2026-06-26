@@ -36,6 +36,10 @@ CONTACT_ENRICHMENT_DROP_IF_MISSING = os.getenv(
 ).strip().lower() in {"1", "true", "yes"}
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY") or os.getenv("HUNTER_IO_API_KEY")
 PDL_API_KEY = os.getenv("PDL_API_KEY")
+ZEROBOUNCE_API_KEY = os.getenv("ZEROBOUNCE_API_KEY") or os.getenv("ZEROBOUNCE_KEY")
+EMAIL_ROLE_ACCOUNT_ACTION = os.getenv("EMAIL_ROLE_ACCOUNT_ACTION", "drop")
+EMAIL_HUNTER_MIN_SCORE = int(os.getenv("EMAIL_HUNTER_MIN_SCORE", "70"))
+HUNTER_MIN_CONTACT_CONFIDENCE = int(os.getenv("HUNTER_MIN_CONTACT_CONFIDENCE", "70"))
 CORS_ORIGIN_REGEX = os.getenv(
     "CORS_ORIGIN_REGEX",
     r"https://([a-zA-Z0-9-]+\.)*lovable\.app",

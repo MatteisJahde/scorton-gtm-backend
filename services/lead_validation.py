@@ -40,6 +40,7 @@ def validate_lead(
     )
 
     qualified = bool(email_result.get("qualified") and contact_result.get("qualified"))
+    needs_review = bool(email_result.get("needs_review"))
     lead_status = LEAD_STATUS_VERIFIED if qualified else LEAD_STATUS_UNVERIFIED
 
     failure_reasons = []
@@ -50,6 +51,7 @@ def validate_lead(
 
     return {
         "qualified": qualified,
+        "needs_review": needs_review,
         "lead_verification_status": lead_status,
         "verification_status": email_result.get("verification_status"),
         "email_status": email_result.get("email_status"),

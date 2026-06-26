@@ -89,3 +89,14 @@ class TargetAccount(Base):
     priority_tier = Column(String, default="Tier 3")
     notes = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class EmailSuppression(Base):
+    __tablename__ = "email_suppressions"
+    __table_args__ = (UniqueConstraint("email", name="uq_email_suppressions_email"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, nullable=False, index=True)
+    reason = Column(String, nullable=False, default="hard_bounce")
+    source = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

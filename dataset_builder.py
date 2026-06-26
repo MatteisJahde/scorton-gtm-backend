@@ -22,7 +22,7 @@ from seed_data import get_companies
 from services.enrichment import enrich_company
 from services.url_utils import domain_from_website, normalize_website, website_display_status
 from services.industry_filter import passes_financial_icp_filter
-from services.contact_fields import attach_contact_aliases, CONTACT_STATUS_NO_CONTACT, CONTACT_STATUS_VERIFIED
+from services.contact_fields import attach_contact_aliases, CONTACT_STATUS_NO_CONTACT, CONTACT_STATUS_REVIEW, CONTACT_STATUS_VERIFIED
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
 
@@ -403,6 +403,8 @@ def build_target_dataset(db: Session) -> dict:
         has_verified_contact = (
             enriched.get("lead_verification_status") == LEAD_STATUS_VERIFIED
             or enriched.get("contact_status") == CONTACT_STATUS_VERIFIED
+            or enriched.get("contact_status") == CONTACT_STATUS_REVIEW
+            or enriched.get("lead_verification_status") == "Review"
         )
         no_contact_marked = enriched.get("contact_status") == CONTACT_STATUS_NO_CONTACT
         if not has_verified_contact and not no_contact_marked:

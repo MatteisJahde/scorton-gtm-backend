@@ -56,6 +56,7 @@ from services.url_utils import (
     website_display_status,
 )
 from services.contact_fields import attach_contact_aliases
+from services.suppression_list import add_suppression, list_suppressions, refresh_suppression_cache
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -184,6 +185,7 @@ def initialize_database(data_file_path: str) -> None:
         print("[database] Initializing SQLite database...", flush=True)
         Base.metadata.create_all(bind=engine)
         migrate_db()
+        refresh_suppression_cache()
         _load_seed_data(data_file_path)
     except Exception as exc:
         print(
@@ -440,6 +442,7 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "contact_role": lead.get("contact_role"),
                 "verified_email": lead.get("verified_email"),
                 "contact_status": lead.get("contact_status"),
+                "needs_review": lead.get("needs_review"),
                 "lead_verification_status": lead.get("lead_verification_status"),
                 "verification_status": lead.get("verification_status"),
                 "contact_verification_status": lead.get("contact_verification_status"),
@@ -904,3 +907,24 @@ def export_target_dataset_xlsx_endpoint(db: Session = Depends(get_db)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": 'attachment; filename="target_dataset.xlsx"'},
     )
+
+
+@app.get("/api/suppression-list")
+def get_suppression_list(db: Session = Depends(get_db)):
+    """Return suppressed (hard-bounced / do-not-mail) email addresses."""
+    return {"count": len(list_suppressions(db=db)), "suppressions": list_suppressions(db=db)}
+
+
+@app.post("/api/suppression-list")
+def post_suppression_entry(
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    """Add an email to the suppression list after a hard bounce."""
+    email = str(payload.get("email") or "").strip()
+    reason = str(payload.get("reason") or "hard_bounce").strip()
+    source = str(payload.get("source") or "api").strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="email is required")
+    added = add_suppression(email, reason=reason, source=source, db=db)
+    return {"added": added, "email": email.lower(), "reason": reason}

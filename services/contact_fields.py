@@ -6,6 +6,7 @@ import re
 from typing import Mapping, Optional
 
 CONTACT_STATUS_VERIFIED = "verified"
+CONTACT_STATUS_REVIEW = "review"
 CONTACT_STATUS_NO_CONTACT = "no_contact_found"
 CONTACT_STATUS_PLACEHOLDER = "placeholder"
 
@@ -39,7 +40,12 @@ def is_likely_synthetic_contact(name: object, email: object, company_name: objec
 
 def resolve_contact_status(record: Mapping[str, object]) -> str:
     explicit = str(record.get("contact_status") or "").strip().lower()
-    if explicit in {CONTACT_STATUS_VERIFIED, CONTACT_STATUS_NO_CONTACT, CONTACT_STATUS_PLACEHOLDER}:
+    if explicit in {
+        CONTACT_STATUS_VERIFIED,
+        CONTACT_STATUS_REVIEW,
+        CONTACT_STATUS_NO_CONTACT,
+        CONTACT_STATUS_PLACEHOLDER,
+    }:
         return explicit
 
     name = record.get("contact_name") or record.get("buyer_name")
@@ -88,6 +94,7 @@ def attach_contact_aliases(record: dict) -> dict:
     enriched["contact_role"] = contact_role
     enriched["verified_email"] = verified_email
     enriched["contact_status"] = status
+    enriched["needs_review"] = status == CONTACT_STATUS_REVIEW or bool(enriched.get("needs_review"))
     enriched["buyer_name"] = contact_name if contact_name != "No Contact Found" else enriched.get("buyer_name", "")
     enriched["job_title"] = contact_role
     enriched["work_email"] = verified_email
