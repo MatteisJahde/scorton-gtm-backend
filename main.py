@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+import uvicorn
 from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -444,6 +445,7 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "verified_email": lead.get("verified_email"),
                 "contact_status": lead.get("contact_status"),
                 "needs_review": lead.get("needs_review"),
+                "email_status": lead.get("email_status"),
                 "lead_verification_status": lead.get("lead_verification_status"),
                 "verification_status": lead.get("verification_status"),
                 "contact_verification_status": lead.get("contact_verification_status"),
@@ -932,7 +934,5 @@ def post_suppression_entry(
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    port = int(os.getenv("PORT", "10000"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
