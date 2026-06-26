@@ -1,4 +1,5 @@
 import csv
+import os
 import traceback
 from collections import Counter
 from pathlib import Path
@@ -928,3 +929,10 @@ def post_suppression_entry(
         raise HTTPException(status_code=400, detail="email is required")
     added = add_suppression(email, reason=reason, source=source, db=db)
     return {"added": added, "email": email.lower(), "reason": reason}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.getenv("PORT", "10000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
