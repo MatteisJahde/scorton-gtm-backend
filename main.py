@@ -291,7 +291,10 @@ def health():
 @api_router.get("/health")
 def api_health():
     return json_success(
-        {"status": "ok"},
+        {
+            "status": "ok",
+            "db_ready": _db_initialization_complete,
+        },
         meta={"environment": ENVIRONMENT, "api_base_url": API_BASE_URL},
     )
 
