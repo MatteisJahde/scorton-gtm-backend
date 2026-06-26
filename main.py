@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import os
 import traceback
@@ -248,9 +249,10 @@ def load_data(data_file_path: str) -> None:
 
 @app.on_event("startup")
 async def startup_event():
-    # Force the engine to load the verified 19-company list immediately
-    print(f"FORCING LOAD: {DATA_FILE_PATH}", flush=True)
-    initialize_database(DATA_FILE_PATH)
+    # Defer heavy CSV ingest so uvicorn binds to PORT immediately on Render.
+    print(f"FORCING LOAD (background): {DATA_FILE_PATH}", flush=True)
+    loop = asyncio.get_running_loop()
+    loop.run_in_executor(None, initialize_database, DATA_FILE_PATH)
 
 
 @app.get("/health")
@@ -935,4 +937,5 @@ def post_suppression_entry(
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+    print(f"[server] Starting on 0.0.0.0:{port}", flush=True)
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
