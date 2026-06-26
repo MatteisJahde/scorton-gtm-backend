@@ -309,11 +309,19 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
             "qualified": False,
             "verification_status": "unverified",
         }
-    elif lead_verification_status == LEAD_STATUS_VERIFIED and primary_email:
+    elif primary_email and (
+        lead_verification_status == LEAD_STATUS_VERIFIED
+        or csv_extras.get("email_provider") == "zerobounce"
+    ):
         email_result = preverified_email_result(
             primary_email,
             str(contact_payload.get("verification_status") or csv_extras.get("verification_status") or ""),
             email_status=contact_payload.get("email_status") or csv_extras.get("email_status"),
+        )
+        lead_verification_status = (
+            contact_payload.get("lead_verification_status")
+            or csv_extras.get("lead_verification_status")
+            or lead_verification_status
         )
     else:
         hygiene = run_email_hygiene_pipeline(primary_email, seed=_seed(company))
@@ -361,6 +369,9 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "job_title": job_title,
         "work_email": email_result["work_email"],
         "email_status": email_result["email_status"],
+        "email_provider": csv_extras.get("email_provider"),
+        "zerobounce_status": csv_extras.get("zerobounce_status"),
+        "zerobounce_sub_status": csv_extras.get("zerobounce_sub_status"),
         "lead_verification_status": lead_verification_status,
         "verification_status": contact_payload.get("verification_status")
         or csv_extras.get("verification_status")

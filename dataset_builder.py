@@ -18,7 +18,7 @@ from deduplication import (
     company_identity_key,
     deduplicate_company_records,
 )
-from seed_data import get_companies
+from seed_data import get_companies, get_company_csv_extras
 from services.enrichment import enrich_company
 from services.url_utils import domain_from_website, normalize_website, website_display_status
 from services.industry_filter import passes_financial_icp_filter
@@ -224,6 +224,11 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "job_title": account.job_title,
         "work_email": account.work_email,
         "email_status": account.email_status,
+        "email_provider": get_company_csv_extras(account.company_name).get("email_provider"),
+        "zerobounce_status": get_company_csv_extras(account.company_name).get("zerobounce_status"),
+        "zerobounce_sub_status": get_company_csv_extras(account.company_name).get(
+            "zerobounce_sub_status"
+        ),
         "lead_verification_status": account.lead_verification_status,
         "verification_status": account.verification_status,
         "contact_verification_status": account.contact_verification_status,
