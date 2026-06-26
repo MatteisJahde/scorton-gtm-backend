@@ -178,56 +178,64 @@ def _contact_to_dict(contact: Contact) -> dict:
     }
 
 
-# Force-load the correct file on startup
+# Force-load the correct file on startup (background task only — never at import).
 DATA_FILE_PATH = "actual_companies.csv"
+_db_initialization_complete = False
 
 
 def initialize_database(data_file_path: str) -> None:
     """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
+    global _db_initialization_complete
     try:
-        print("[database] Initializing SQLite database...", flush=True)
+        print("[database] Step 1/4: creating tables...", flush=True)
         Base.metadata.create_all(bind=engine)
+        print("[database] Step 2/4: running migrations...", flush=True)
         migrate_db()
+        print("[database] Step 3/4: loading suppression list...", flush=True)
         refresh_suppression_cache()
+        print("[database] Step 4/4: ingesting CSV data...", flush=True)
         _load_seed_data(data_file_path)
+        _db_initialization_complete = True
+        print("[database] Initialization completed successfully.", flush=True)
     except Exception as exc:
-        print(
-            f"[database] Startup initialization failed (server will continue): {exc}",
-            flush=True,
-        )
+        print(f"[database] Initialization FAILED: {exc}", flush=True)
         traceback.print_exc()
 
 
 def _load_seed_data(data_file_path: str) -> None:
     """Force-ingest companies from CSV and rebuild the target dataset."""
     csv_path = Path(__file__).resolve().parent / data_file_path
-    print(f"FORCING LOAD: {csv_path}", flush=True)
+    print(f"[database] CSV path: {csv_path}", flush=True)
 
     if not csv_path.exists():
-        print(f"FORCING LOAD: file not found — {csv_path}", flush=True)
+        print(f"[database] CSV not found — skipping ingest: {csv_path}", flush=True)
         return
 
     db = SessionLocal()
     try:
+        print("[database] Clearing existing company records...", flush=True)
         db.query(TargetAccount).delete()
         db.query(Contact).delete()
         db.query(Company).delete()
         db.commit()
 
+        print("[database] Parsing CSV rows...", flush=True)
         companies, _report = load_actual_companies_with_report(csv_path)
         if not companies:
-            print("FORCING LOAD: no valid rows found in CSV.", flush=True)
+            print("[database] No valid rows found in CSV.", flush=True)
             return
 
+        print(f"[database] Ingesting {len(companies)} companies...", flush=True)
         ingest_result = ingest_companies(db)
         if ingest_result.get("error"):
-            print(f"FORCING LOAD: ingest failed — {ingest_result}", flush=True)
+            print(f"[database] Ingest failed: {ingest_result}", flush=True)
             return
 
+        print("[database] Building target dataset...", flush=True)
         build_result = build_target_dataset(db)
         verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
         print(
-            f"[startup] Lead verification — Verified: {verification.get('verified', 0)} | "
+            f"[database] Lead verification — Verified: {verification.get('verified', 0)} | "
             f"Unverified: {verification.get('unverified', 0)}",
             flush=True,
         )
@@ -238,6 +246,10 @@ def _load_seed_data(data_file_path: str) -> None:
             },
             flush=True,
         )
+    except Exception as exc:
+        print(f"[database] CSV load FAILED: {exc}", flush=True)
+        traceback.print_exc()
+        raise
     finally:
         db.close()
 
@@ -247,18 +259,31 @@ def load_data(data_file_path: str) -> None:
     initialize_database(data_file_path)
 
 
+async def _run_background_initialization() -> None:
+    """Load CSV data after the HTTP server is already accepting connections."""
+    try:
+        print("[startup] Background CSV initialization starting...", flush=True)
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, initialize_database, DATA_FILE_PATH)
+        print("[startup] Background CSV initialization finished.", flush=True)
+    except Exception as exc:
+        print(f"[startup] Background CSV initialization FAILED: {exc}", flush=True)
+        traceback.print_exc()
+
+
 @app.on_event("startup")
-async def startup_event():
-    # Defer heavy CSV ingest so uvicorn binds to PORT immediately on Render.
-    print(f"FORCING LOAD (background): {DATA_FILE_PATH}", flush=True)
-    loop = asyncio.get_running_loop()
-    loop.run_in_executor(None, initialize_database, DATA_FILE_PATH)
+async def startup_event() -> None:
+    print("[startup] HTTP server ready — port should be open for health checks.", flush=True)
+    asyncio.create_task(_run_background_initialization())
 
 
 @app.get("/health")
 def health():
     return json_success(
-        {"status": "ok"},
+        {
+            "status": "ok",
+            "db_ready": _db_initialization_complete,
+        },
         meta={"environment": ENVIRONMENT, "api_base_url": API_BASE_URL},
     )
 
@@ -936,6 +961,9 @@ def post_suppression_entry(
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    print(f"[server] Starting on 0.0.0.0:{port}", flush=True)
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 10000)),
+        reload=False,
+    )

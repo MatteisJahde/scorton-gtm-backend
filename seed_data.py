@@ -378,7 +378,3 @@ def get_companies() -> list[dict[str, Any]]:
     """Primary data source for ingestion (static CSV only)."""
     companies, _report = load_actual_companies_with_report()
     return companies
-
-
-# Backward-compatible alias used by ingestion.py / dataset_builder.py.
-COMPANIES = get_companies()
