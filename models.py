@@ -76,6 +76,8 @@ class TargetAccount(Base):
     lead_verification_status = Column(String, default="Unverified")
     verification_status = Column(String, nullable=True)
     contact_verification_status = Column(String, nullable=True)
+    contact_status = Column(String, nullable=True)
+    enrichment_provider = Column(String, nullable=True)
     linkedin_url = Column(String, default="TBD")
     company_linkedin_url = Column(String, nullable=True)
     city_validated = Column(Boolean, default=False)

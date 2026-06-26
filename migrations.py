@@ -62,6 +62,8 @@ def migrate_db() -> None:
             ("lead_verification_status", "VARCHAR DEFAULT 'Unverified'"),
             ("verification_status", "VARCHAR"),
             ("contact_verification_status", "VARCHAR"),
+            ("contact_status", "VARCHAR"),
+            ("enrichment_provider", "VARCHAR"),
             ("funding", "VARCHAR"),
             ("revenue", "VARCHAR"),
             ("funding_amount", "VARCHAR"),

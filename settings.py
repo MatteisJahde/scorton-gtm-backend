@@ -29,7 +29,13 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://lovable.app")
 
-# Matches https://your-project.lovable.app and preview subdomains.
+# Contact enrichment (Hunter.io domain search, PDL person search)
+CONTACT_ENRICHMENT_PROVIDER = os.getenv("CONTACT_ENRICHMENT_PROVIDER", "auto")
+CONTACT_ENRICHMENT_DROP_IF_MISSING = os.getenv(
+    "CONTACT_ENRICHMENT_DROP_IF_MISSING", "false"
+).strip().lower() in {"1", "true", "yes"}
+HUNTER_API_KEY = os.getenv("HUNTER_API_KEY") or os.getenv("HUNTER_IO_API_KEY")
+PDL_API_KEY = os.getenv("PDL_API_KEY")
 CORS_ORIGIN_REGEX = os.getenv(
     "CORS_ORIGIN_REGEX",
     r"https://([a-zA-Z0-9-]+\.)*lovable\.app",

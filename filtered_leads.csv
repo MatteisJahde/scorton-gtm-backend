@@ -1,0 +1,115 @@
+company,website,industry,city,employee_count,intent,signal_score,buyer_name,job_title,work_email
+Betterment,https://www.betterment.com,Financial Services,New York,450,high,94,Sarah Kirchner,Chief Compliance Officer,sarah.kirchner@betterment.com
+Policygenius,https://www.policygenius.com,Insurance,New York,340,high,91,Jennifer Fitzgerald,CEO,jennifer.fitzgerald@policygenius.com
+Alloy,https://www.alloy.com,Financial Services,New York,220,high,96,Tommy Nicholas,CEO,tommy.nicholas@alloy.com
+Novo,https://www.novo.co,Financial Services,New York,180,high,88,Michael Barbarita,COO,michael.barbarita@novo.co
+Newfront Insurance,https://www.newfront.com,Insurance,San Francisco,380,high,90,Gordon Wintrob,Co-CEO,gordon.wintrob@newfront.com
+Vouch Insurance,https://www.vouch.us,Insurance,San Francisco,150,high,87,Sam Gerstenzang,CEO,sam.gerstenzang@vouch.us
+Highnote,https://www.highnote.com,Financial Services,San Francisco,120,high,93,Ahmed Siddiqui,CEO,ahmed.siddiqui@highnote.com
+Pipe,https://www.pipe.com,Financial Services,Miami,210,high,92,Harry Hurst,Co-CEO,harry.hurst@pipe.com
+Aprio,https://www.aprio.com,Accounting,Atlanta,280,high,85,Carlton Collins,Director of Technology,carlton.collins@aprio.com
+AssuredPartners,https://www.assuredpartners.com,Insurance,Orlando,190,high,89,Jim Henderson,President Southeast Region,jim.henderson@assuredpartners.com
+Northern Trust,https://www.northerntrust.com,Financial Services,Chicago,95,high,95,Logan Sullivan,CIO,logan.sullivan@northerntrust.com
+Morningstar,https://www.morningstar.com,Financial Services,Chicago,450,high,97,Jamie Hayes,Head of Risk,jamie.hayes@morningstar.com
+TransUnion,https://www.transunion.com,Financial Services,Chicago,420,high,96,Quinn Reed,Director of Compliance,quinn.reed@transunion.com
+CNA Financial,https://www.cna.com,Insurance,Chicago,400,high,93,Alex Chen,CRO,alex.chen@cna.com
+HUB International,https://www.hubinternational.com,Insurance,Chicago,280,high,90,Taylor Foster,CAIO,taylor.foster@hubinternational.com
+William Blair,https://www.williamblair.com,Financial Services,Chicago,175,high,91,Morgan Coleman,Head of Risk,morgan.coleman@williamblair.com
+Relativity,https://www.relativity.com,Financial Services,Chicago,150,high,88,Blake Patel,Director of Governance,blake.patel@relativity.com
+Jellyvision,https://www.jellyvision.com,Accounting,Chicago,260,high,86,Riley Walsh,CFO,riley.walsh@jellyvision.com
+Braintree,https://www.braintreepayments.com,Financial Services,Chicago,140,high,92,Casey Nguyen,CTO,casey.nguyen@braintreepayments.com
+"magaya insurance services, inc.",https://magayainsurance.com,Insurance,Miami,350,high,84,Jamie Hayes,CRO,jamie.hayes@magayainsurance.com
+brandon college,https://brandoncollege.com,Financial Services,San Francisco,30,high,82,Drew Hayes,CAIO,drew.hayes@brandoncollege.com
+herbal house quality garden,https://herbalhouseqg.com,Financial Services,Miami,125,high,82,Jamie Chen,CAIO,jamie.chen@herbalhouseqg.com
+dosa sports,https://dosasports.com,Financial Services,New York,30,high,82,Drew Sullivan,CAIO,drew.sullivan@dosasports.com
+latitude intl,https://latitude-intl.com,Financial Services,New York,30,high,82,Avery Brooks,Head of Risk,avery.brooks@latitude-intl.com
+wi inc.,https://wi.co,Financial Services,San Francisco,125,high,82,Logan Foster,Director of Compliance,logan.foster@wi.co
+primer,https://primer.com,Financial Services,San Francisco,30,high,82,Riley Reed,CIO,riley.reed@primer.com
+wex field service management,https://payzer.com,Financial Services,Charlotte,125,high,82,Blake Turner,Director of Compliance,blake.turner@payzer.com
+eisneramper fund solutions,https://eisneramperfundservices.com,Accounting,New York,30,high,82,Alex Foster,CIO,alex.foster@eisneramperfundservices.com
+noyo,https://noyo.com,Financial Services,San Francisco,30,high,82,Casey Reed,Director of Compliance,casey.reed@noyo.com
+gem technologies,https://gemtechnologies.net,Financial Services,New York,30,high,82,Logan Kim,Director of Compliance,logan.kim@gemtechnologies.net
+i.c.stars |* chicago,https://icstars.org,Financial Services,Chicago,30,high,82,Alex Nguyen,CIO,alex.nguyen@icstars.org
+mariachi el rey,https://mariachielrey.com,Financial Services,Miami,30,high,82,Harper Diaz,Head of Risk,harper.diaz@mariachielrey.com
+lifenome inc.,https://lifenome.com,Financial Services,New York,30,high,82,Cameron Brooks,CIO,cameron.brooks@lifenome.com
+openidl,https://openidl.org,Insurance,San Francisco,125,high,82,Alex Foster,CIO,alex.foster@openidl.org
+website designs nyc,https://websitedesignsnyc.com,Financial Services,New York,30,high,82,Jordan Kim,CAIO,jordan.kim@websitedesignsnyc.com
+macrosyst,https://macrosyst.com,Financial Services,New York,30,high,82,Alex Chen,CIO,alex.chen@macrosyst.com
+brusco contracting corp,https://bruscogroup.com,Financial Services,New York,30,high,82,Avery Diaz,Head of Risk,avery.diaz@bruscogroup.com
+route 66 moving,https://route66moving.com,Financial Services,San Francisco,30,high,82,Blake Patel,Director of Compliance,blake.patel@route66moving.com
+cost estimation solutions inc.,https://costestimation.us,Financial Services,New York,30,high,82,Cameron Hayes,CIO,cameron.hayes@costestimation.us
+diggz,https://diggz.co,Financial Services,New York,30,high,82,Jamie Turner,CAIO,jamie.turner@diggz.co
+office revolution,https://office-revolution.com,Financial Services,Chicago,125,high,82,Taylor Coleman,CRO,taylor.coleman@office-revolution.com
+"star funding, inc.",https://starfunding.com,Financial Services,New York,30,high,82,Elliot Sullivan,CRO,elliot.sullivan@starfunding.com
+robotappstore.com,https://robotappstore.com,Financial Services,San Francisco,30,high,82,Quinn Brooks,CRO,quinn.brooks@robotappstore.com
+thiyah,https://thiyah.com,Financial Services,New York,30,high,82,Harper Vargas,Head of Risk,harper.vargas@thiyah.com
+bin 36,https://bin36.com,Financial Services,Chicago,30,high,82,Blake Reed,Director of Compliance,blake.reed@bin36.com
+the event planner expo,https://theeventplannerexpo.com,Financial Services,New York,30,high,82,Logan Bennett,Director of Compliance,logan.bennett@theeventplannerexpo.com
+covo,https://hellocovo.com,Financial Services,San Francisco,30,high,82,Jamie Walsh,CAIO,jamie.walsh@hellocovo.com
+weclean hospitality,https://wecleanhospitality.com,Financial Services,New York,350,high,84,Blake Reed,Director of Compliance,blake.reed@wecleanhospitality.com
+i2 grid,https://i2grid.com,Financial Services,Charlotte,30,high,82,Jordan Chen,CAIO,jordan.chen@i2grid.com
+abbey carpet and rugs,https://abbeycarpetsf.com,Financial Services,San Francisco,30,high,82,Elliot Sullivan,CRO,elliot.sullivan@abbeycarpetsf.com
+"amicus, inc.",https://amicushq.com,Financial Services,San Francisco,30,high,82,Taylor Coleman,CRO,taylor.coleman@amicushq.com
+lingshu refuge,https://lingshurefuge.com,Financial Services,San Francisco,30,high,82,Logan Nguyen,Director of Compliance,logan.nguyen@lingshurefuge.com
+matthew schwam design solutions,https://matthewschwam.com,Financial Services,New York,30,high,82,Drew Brooks,CAIO,drew.brooks@matthewschwam.com
+myfaa.com,https://myfaa.com,Financial Services,Chicago,30,high,82,Avery Patel,Head of Risk,avery.patel@myfaa.com
+rubber and road creative,https://rubberandroad.com,Financial Services,San Francisco,30,high,82,Jamie Turner,CAIO,jamie.turner@rubberandroad.com
+industrial temperature llc,https://industemp.com,Financial Services,Miami,30,high,82,Avery Patel,Head of Risk,avery.patel@industemp.com
+anisma films,https://greatdirectorsfilm.com,Financial Services,New York,30,high,82,Cameron Diaz,CIO,cameron.diaz@greatdirectorsfilm.com
+abernethy contracting,https://abernethycontracting.com,Financial Services,Charlotte,125,high,82,Jamie Walsh,CAIO,jamie.walsh@abernethycontracting.com
+masks for all ca,https://masksforallca.org,Financial Services,San Francisco,30,high,82,Logan Bennett,Director of Compliance,logan.bennett@masksforallca.org
+premier consulting partners,https://premierconsultingpartners.com,Financial Services,New York,30,high,82,Alex Sullivan,CIO,alex.sullivan@premierconsultingpartners.com
+realty amp,https://realtyamp.com,Financial Services,New York,30,high,82,Jordan Nguyen,CAIO,jordan.nguyen@realtyamp.com
+"mopo productions, inc.",https://halfwaytodead.com,Financial Services,New York,125,high,82,Elliot Diaz,CRO,elliot.diaz@halfwaytodead.com
+specialty delivery & logistics inc,https://sdldelivery.com,Financial Services,Charlotte,30,high,82,Blake Turner,Director of Compliance,blake.turner@sdldelivery.com
+"pod1, inc.",https://pod1.com,Financial Services,New York,30,high,82,Drew Brooks,CAIO,drew.brooks@pod1.com
+greensledge,https://greensledge.com,Financial Services,New York,125,high,82,Cameron Vargas,CIO,cameron.vargas@greensledge.com
+generali u.s. branch,https://generaliusa.com,Insurance,New York,125,high,82,Jordan Sullivan,CRO,jordan.sullivan@generaliusa.com
+lisa eddy skin care,https://lisaeddy.com,Financial Services,San Francisco,30,high,82,Drew Patel,CAIO,drew.patel@lisaeddy.com
+first opinion,https://firstopinionapp.com,Financial Services,San Francisco,30,high,82,Taylor Sullivan,CRO,taylor.sullivan@firstopinionapp.com
+miami new construction show,https://mncs2016.com,Financial Services,Miami,30,high,82,Casey Reed,Director of Compliance,casey.reed@mncs2016.com
+success centers,https://successcenters.org,Financial Services,San Francisco,125,high,82,Morgan Coleman,Head of Risk,morgan.coleman@successcenters.org
+intros.us,https://intros.us,Financial Services,New York,30,high,82,Riley Reed,CIO,riley.reed@intros.us
+"adherence, llc",https://adherencellc.com,Financial Services,New York,30,high,82,Taylor Nguyen,CRO,taylor.nguyen@adherencellc.com
+nimbus media,https://nimbus.stream,Financial Services,New York,30,high,82,Harper Vargas,Head of Risk,harper.vargas@nimbus.stream
+previse® skincare,https://previsecare.com,Financial Services,New York,30,high,82,Cameron Reed,CIO,cameron.reed@previsecare.com
+hive analytics,https://hiveanalytics.com,Financial Services,Chicago,125,high,82,Quinn Brooks,CRO,quinn.brooks@hiveanalytics.com
+seabury airline strategy group,https://airline-strategy.com,Financial Services,Chicago,30,high,82,Blake Reed,Director of Compliance,blake.reed@airline-strategy.com
+roads to success,https://roadstosuccess.org,Financial Services,New York,125,high,82,Blake Patel,Director of Compliance,blake.patel@roadstosuccess.org
+visionbuilders design,https://visionbuildersusa.com,Financial Services,Charlotte,30,high,82,Drew Diaz,CAIO,drew.diaz@visionbuildersusa.com
+"boba digital, llc",https://bobadigital.com,Financial Services,Miami,30,high,82,Taylor Walsh,CRO,taylor.walsh@bobadigital.com
+ftl group,https://ftlcap.com,Financial Services,San Francisco,30,high,82,Casey Walsh,Director of Compliance,casey.walsh@ftlcap.com
+samsonpr,https://samsonpr.com,Financial Services,San Francisco,30,high,82,Casey Chen,Director of Compliance,casey.chen@samsonpr.com
+the randazzos’ grid iron,https://therandazzosgridiron.com,Financial Services,Charlotte,30,high,82,Avery Brooks,Head of Risk,avery.brooks@therandazzosgridiron.com
+w capital partners,https://wcapgroup.com,Financial Services,New York,30,high,82,Taylor Kim,CRO,taylor.kim@wcapgroup.com
+loco coco nyc,https://loco-coco.com,Financial Services,New York,30,high,82,Cameron Diaz,CIO,cameron.diaz@loco-coco.com
+donum dei classical academy,https://donumdei.org,Financial Services,San Francisco,30,high,82,Jordan Nguyen,CAIO,jordan.nguyen@donumdei.org
+barley an american brasserie,https://allpraisethelard.com,Financial Services,Miami,30,high,82,Taylor Chen,CRO,taylor.chen@allpraisethelard.com
+community offshore wind,https://communityoffshorewind.com,Financial Services,New York,125,high,82,Logan Vargas,Director of Compliance,logan.vargas@communityoffshorewind.com
+affluence market reports®,https://affluencemarketreports.com,Financial Services,New York,30,high,82,Morgan Coleman,Head of Risk,morgan.coleman@affluencemarketreports.com
+ets media llc,https://enterprisetechsuccess.com,Financial Services,San Francisco,30,high,82,Cameron Bennett,CIO,cameron.bennett@enterprisetechsuccess.com
+prodtrace,https://prodtrace.com,Financial Services,San Francisco,30,high,82,Alex Chen,CIO,alex.chen@prodtrace.com
+akkadian labs,https://akkadianlabs.com,Financial Services,New York,125,high,82,Taylor Nguyen,CRO,taylor.nguyen@akkadianlabs.com
+kate keating associates,https://kkainc.com,Financial Services,San Francisco,30,high,82,Avery Patel,Head of Risk,avery.patel@kkainc.com
+afox leads,https://afoxleads.com,Financial Services,Miami,125,high,82,Jordan Foster,CAIO,jordan.foster@afoxleads.com
+jailbreakvpn.com (a usa based cybersecurity firm),https://jailbreakvpn.com,Financial Services,San Francisco,350,high,84,Quinn Reed,CRO,quinn.reed@jailbreakvpn.com
+nelly corp realty,https://nellycorprealty.com,Financial Services,Chicago,30,high,82,Elliot Brooks,CRO,elliot.brooks@nellycorprealty.com
+sam technology,https://mysamcloud.com,Accounting,San Francisco,30,high,82,Logan Diaz,Director of Governance,logan.diaz@mysamcloud.com
+pur attitude,https://purattitude.com,Financial Services,Miami,30,high,82,Avery Walsh,Head of Risk,avery.walsh@purattitude.com
+progressive grocer,https://progressivegrocer.com,Financial Services,Chicago,350,high,84,Drew Diaz,CAIO,drew.diaz@progressivegrocer.com
+zak consultants,https://zakconsultant.com,Financial Services,New York,30,high,82,Jordan Nguyen,CAIO,jordan.nguyen@zakconsultant.com
+lendingfront,https://lendingfront.com,Financial Services,New York,125,high,82,Casey Nguyen,Director of Compliance,casey.nguyen@lendingfront.com
+story jam,https://storyjamshow.com,Financial Services,Chicago,30,high,82,Avery Turner,Head of Risk,avery.turner@storyjamshow.com
+web property manager,https://webpropertymanager.com,Financial Services,Chicago,30,high,82,Logan Vargas,Director of Compliance,logan.vargas@webpropertymanager.com
+think!,https://thinkproducts.com,Financial Services,Chicago,30,high,82,Harper Vargas,Head of Risk,harper.vargas@thinkproducts.com
+fieldos,https://fieldos.co,Financial Services,Chicago,30,high,82,Logan Bennett,Director of Compliance,logan.bennett@fieldos.co
+tuesday's child,https://tuesdayschildchicago.org,Financial Services,Chicago,30,high,82,Blake Brooks,Director of Compliance,blake.brooks@tuesdayschildchicago.org
+orchard corp,https://orchardcorp.com,Financial Services,Chicago,125,high,82,Harper Diaz,Head of Risk,harper.diaz@orchardcorp.com
+fiverr gig promotion usa,https://go.fiverr.com/visit,Financial Services,New York,350,high,84,Elliot Diaz,CRO,elliot.diaz@go.fiverr.com
+kamani,https://kamanionline.com,Financial Services,Chicago,30,high,82,Avery Diaz,Head of Risk,avery.diaz@kamanionline.com
+flemming zulack williamson zauderer llp,https://fzwz.com,Financial Services,New York,30,high,82,Drew Sullivan,CAIO,drew.sullivan@fzwz.com
+pont ventures,https://pontventures.com,Financial Services,Miami,30,high,82,Casey Coleman,Director of Compliance,casey.coleman@pontventures.com
+giocasa,https://gio-casa.com,Financial Services,Miami,30,high,82,Taylor Coleman,CRO,taylor.coleman@gio-casa.com
+metamarkets (now rill data),https://metamarkets.com,Financial Services,San Francisco,30,high,82,Quinn Reed,CRO,quinn.reed@metamarkets.com
+rod winterrowd inc,https://rodwinterrowd.com,Financial Services,New York,30,high,82,Morgan Foster,Head of Risk,morgan.foster@rodwinterrowd.com
+rakam (acquired by liveramp),https://rakam.io,Financial Services,San Francisco,30,high,82,Casey Turner,Director of Compliance,casey.turner@rakam.io

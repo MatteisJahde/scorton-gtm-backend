@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional
 import requests
 
 HUNTER_EMAIL_VERIFIER_URL = "https://api.hunter.io/v2/email-verifier"
+HUNTER_DOMAIN_SEARCH_URL = "https://api.hunter.io/v2/domain-search"
 DEFAULT_TIMEOUT_SECONDS = 20
 
 
@@ -67,3 +68,43 @@ def hunter_verify_email(email: str, *, api_key: Optional[str] = None) -> Dict[st
         "gibberish": data.get("gibberish"),
         "hunter": data,
     }
+
+
+class HunterDomainSearchError(Exception):
+    """Raised when Hunter.io domain search fails."""
+
+
+def hunter_domain_search(
+    domain: str,
+    *,
+    api_key: Optional[str] = None,
+    limit: int = 10,
+) -> dict[str, Any]:
+    """Return Hunter.io domain-search payload for a company domain."""
+    key = api_key or get_hunter_api_key()
+    if not key:
+        raise HunterDomainSearchError("HUNTER_API_KEY is not configured")
+
+    response = requests.get(
+        HUNTER_DOMAIN_SEARCH_URL,
+        params={
+            "domain": domain.strip().lower(),
+            "api_key": key,
+            "limit": limit,
+        },
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+    )
+
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise HunterDomainSearchError(
+            f"Invalid JSON from Hunter.io: {response.text[:200]}"
+        ) from exc
+
+    if response.status_code != 200:
+        errors = payload.get("errors") or []
+        message = errors[0].get("details") if errors else response.text[:200]
+        raise HunterDomainSearchError(f"Hunter.io HTTP {response.status_code}: {message}")
+
+    return payload.get("data") or {}

@@ -22,12 +22,27 @@ from seed_data import get_companies
 from services.enrichment import enrich_company
 from services.url_utils import domain_from_website, normalize_website, website_display_status
 from services.industry_filter import passes_financial_icp_filter
+from services.contact_fields import attach_contact_aliases, CONTACT_STATUS_NO_CONTACT, CONTACT_STATUS_VERIFIED
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from sorting_agent import sort_companies_for_final_cut
 
 TARGET_COUNT = 25
 MAX_TARGET_ACCOUNTS = 1000
 PER_CITY_LIMIT = MAX_TARGET_ACCOUNTS // 4
+
+_TARGET_ACCOUNT_COLUMNS = {
+    column.name
+    for column in TargetAccount.__table__.columns
+    if column.name not in {"id", "created_at"}
+}
+
+
+def _target_account_kwargs(enriched: dict) -> dict:
+    return {
+        key: value
+        for key, value in enriched.items()
+        if key in _TARGET_ACCOUNT_COLUMNS
+    }
 
 ORIGINAL_TARGET_CITIES = (
     "Charlotte",
@@ -185,7 +200,7 @@ def target_account_to_dict(account: TargetAccount) -> dict:
             "locality": getattr(account, "locality", None),
         }
     )
-    return {
+    payload = {
         "id": account.id,
         "company_id": account.company_id,
         "company_name": account.company_name,
@@ -212,6 +227,11 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "lead_verification_status": account.lead_verification_status,
         "verification_status": account.verification_status,
         "contact_verification_status": account.contact_verification_status,
+        "contact_name": account.buyer_name,
+        "contact_role": account.job_title,
+        "verified_email": account.work_email,
+        "contact_status": getattr(account, "contact_status", None),
+        "enrichment_provider": getattr(account, "enrichment_provider", None),
         "linkedin_url": account.linkedin_url,
         "company_linkedin_url": account.company_linkedin_url,
         "ai_signal": account.ai_signal,
@@ -225,6 +245,7 @@ def target_account_to_dict(account: TargetAccount) -> dict:
         "notes": account.notes,
         "created_at": account.created_at.isoformat() if account.created_at else None,
     }
+    return attach_contact_aliases(payload)
 
 
 def format_row_for_reference_csv(row: dict, *, export_id: int) -> dict:
@@ -372,11 +393,19 @@ def build_target_dataset(db: Session) -> dict:
     unverified_excluded = 0
     for index, company in enumerate(companies):
         enriched = enrich_company(company, index)
+        if enriched.get("_drop_lead"):
+            unverified_excluded += 1
+            continue
         accepted, _reason = passes_financial_icp_filter(enriched)
         if not accepted:
             unverified_excluded += 1
             continue
-        if enriched.get("lead_verification_status") != LEAD_STATUS_VERIFIED:
+        has_verified_contact = (
+            enriched.get("lead_verification_status") == LEAD_STATUS_VERIFIED
+            or enriched.get("contact_status") == CONTACT_STATUS_VERIFIED
+        )
+        no_contact_marked = enriched.get("contact_status") == CONTACT_STATUS_NO_CONTACT
+        if not has_verified_contact and not no_contact_marked:
             unverified_excluded += 1
             continue
         enriched_records.append(enriched)
@@ -402,7 +431,7 @@ def build_target_dataset(db: Session) -> dict:
             continue
         seen_identities.add(identity)
 
-        db.add(TargetAccount(**enriched, created_at=datetime.utcnow()))
+        db.add(TargetAccount(**_target_account_kwargs(enriched), created_at=datetime.utcnow()))
         inserted += 1
 
     db.commit()
@@ -441,9 +470,10 @@ def enrich_target_dataset(db: Session) -> dict:
             continue
 
         data = enrich_company(company, index)
-        for field, value in data.items():
-            if field != "company_id":
-                setattr(account, field, value)
+        if data.get("_drop_lead"):
+            continue
+        for field, value in _target_account_kwargs(data).items():
+            setattr(account, field, value)
         enriched_count += 1
 
     db.commit()

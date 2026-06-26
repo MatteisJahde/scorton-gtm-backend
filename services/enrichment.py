@@ -14,6 +14,8 @@ from models import Company
 from scoring import score_company
 from seed_data import get_company_csv_extras
 from sorting_agent import ALLOWED_CITIES, city_priority_bonus
+from services.contact_enrichment import enrich_contact_for_company
+from services.contact_fields import attach_contact_aliases, CONTACT_STATUS_NO_CONTACT
 from services.email_verification import preverified_email_result
 from services.lead_validation import LEAD_STATUS_VERIFIED
 from services.url_utils import domain_from_website, normalize_website
@@ -258,7 +260,6 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
 
     apollo = mock_apollo_enrich(domain, company)
     linkedin_co = mock_linkedin_company(company.name, domain)
-    linkedin_buyer = mock_linkedin_buyer(company, domain, index)
     hubspot = mock_hubspot_signals(domain, company)
     financials = mock_company_financials(company)
     city = extract_city_from_record(
@@ -278,16 +279,41 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
     if csv_extras.get("signal_score") is not None:
         trust_opportunity_score = int(csv_extras["signal_score"])
 
-    buyer_name = csv_extras.get("buyer_name") or linkedin_buyer["buyer_name"]
-    job_title = csv_extras.get("job_title") or linkedin_buyer["job_title"]
-    primary_email = csv_extras.get("work_email") or linkedin_buyer["work_email"]
-
+    buyer_name = str(csv_extras.get("buyer_name") or "").strip()
+    job_title = str(csv_extras.get("job_title") or "").strip()
+    primary_email = str(csv_extras.get("work_email") or "").strip()
     lead_verification_status = csv_extras.get("lead_verification_status")
-    if lead_verification_status == LEAD_STATUS_VERIFIED and csv_extras.get("work_email"):
+
+    contact_payload = enrich_contact_for_company(
+        company_name=company.name,
+        website=website,
+        domain=domain,
+        industry=company.industry,
+        buyer_name=buyer_name,
+        job_title=job_title,
+        work_email=primary_email,
+        lead_verification_status=lead_verification_status,
+    )
+    if contact_payload is None:
+        return {"_drop_lead": True, "company_id": company.id, "company_name": company.name}
+
+    buyer_name = contact_payload.get("buyer_name") or buyer_name
+    job_title = contact_payload.get("job_title") or job_title
+    primary_email = contact_payload.get("work_email") or primary_email
+    lead_verification_status = contact_payload.get("lead_verification_status") or lead_verification_status
+
+    if contact_payload.get("contact_status") == CONTACT_STATUS_NO_CONTACT:
+        email_result = {
+            "work_email": "",
+            "email_status": "Unverified",
+            "qualified": False,
+            "verification_status": "unverified",
+        }
+    elif lead_verification_status == LEAD_STATUS_VERIFIED and primary_email:
         email_result = preverified_email_result(
-            csv_extras["work_email"],
-            str(csv_extras.get("verification_status") or ""),
-            email_status=csv_extras.get("email_status"),
+            primary_email,
+            str(contact_payload.get("verification_status") or csv_extras.get("verification_status") or ""),
+            email_status=contact_payload.get("email_status") or csv_extras.get("email_status"),
         )
     else:
         email_result = verify_and_resolve_work_email(
@@ -296,15 +322,21 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
             domain=domain,
             seed=_seed(company),
         )
-        lead_verification_status = (
-            LEAD_STATUS_VERIFIED if email_result.get("qualified") else "Unverified"
-        )
+        if contact_payload.get("contact_status") != CONTACT_STATUS_NO_CONTACT:
+            lead_verification_status = (
+                LEAD_STATUS_VERIFIED if email_result.get("qualified") else "Unverified"
+            )
+
+    linkedin_buyer_url = contact_payload.get("linkedin_url") or ""
+    if not linkedin_buyer_url:
+        linkedin_buyer = mock_linkedin_buyer(company, domain, index)
+        linkedin_buyer_url = linkedin_buyer["buyer_linkedin_url"]
 
     notes = _generate_notes(company.industry, ai_signal, risk_signal, _seed(company) + index)
     if email_result.get("notes_flag"):
         notes = f"{notes} | {email_result['notes_flag']}"
 
-    return {
+    result = {
         "company_id": company.id,
         "company_name": company.name,
         "website": website,
@@ -322,10 +354,14 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "work_email": email_result["work_email"],
         "email_status": email_result["email_status"],
         "lead_verification_status": lead_verification_status,
-        "verification_status": csv_extras.get("verification_status")
+        "verification_status": contact_payload.get("verification_status")
+        or csv_extras.get("verification_status")
         or email_result.get("verification_status"),
-        "contact_verification_status": csv_extras.get("contact_verification_status"),
-        "linkedin_url": linkedin_buyer["buyer_linkedin_url"],
+        "contact_verification_status": contact_payload.get("contact_verification_status")
+        or csv_extras.get("contact_verification_status"),
+        "contact_status": contact_payload.get("contact_status"),
+        "enrichment_provider": contact_payload.get("enrichment_provider"),
+        "linkedin_url": linkedin_buyer_url,
         "company_linkedin_url": linkedin_co["company_linkedin_url"],
         "ai_signal": ai_signal,
         "risk_signal": risk_signal,
@@ -335,3 +371,4 @@ def enrich_company(company: Company, index: int = 0) -> Dict[str, Any]:
         "priority_tier": _priority_tier(trust_opportunity_score),
         "notes": notes,
     }
+    return attach_contact_aliases(result)

@@ -55,6 +55,7 @@ from services.url_utils import (
     normalize_website,
     website_display_status,
 )
+from services.contact_fields import attach_contact_aliases
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -367,7 +368,7 @@ def _enrich_lead_score_fields(lead: dict) -> dict:
     enriched["domain"] = domain
     enriched["website_status"] = website_display_status(website)
     enriched["website_link"] = website if enriched["website_status"] == "ready" else ""
-    return enriched
+    return attach_contact_aliases(enriched)
 
 
 def _filter_high_intent_leads(leads: list[dict]) -> list[dict]:
@@ -435,6 +436,10 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "buyer_name": lead.get("buyer_name"),
                 "job_title": lead.get("job_title"),
                 "work_email": lead.get("work_email"),
+                "contact_name": lead.get("contact_name"),
+                "contact_role": lead.get("contact_role"),
+                "verified_email": lead.get("verified_email"),
+                "contact_status": lead.get("contact_status"),
                 "lead_verification_status": lead.get("lead_verification_status"),
                 "verification_status": lead.get("verification_status"),
                 "contact_verification_status": lead.get("contact_verification_status"),

@@ -32,160 +32,37 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from city_utils import normalize_city_name  # noqa: E402
 from seed_data import ACTUAL_COMPANIES_CSV  # noqa: E402
-from services.pdl_client import (  # noqa: E402
-    PDLAPIError,
-    fetch_fintech_and_accounting_companies,
-    require_pdl_api_key,
+from services.pdl_client import PDLAPIError, require_pdl_api_key  # noqa: E402
+from services.lead_batch_builder import (  # noqa: E402
+    ACTUAL_COMPANIES_FIELDNAMES,
+    generate_verified_lead_batch,
+    load_existing_lead_keys,
+    normalize_company_key,
+    normalize_domain_key,
+    write_lead_batch_csv,
 )
-from services.pdl_contact_search import PDLPersonSearchError, search_buyer_contact  # noqa: E402
-from sorting_agent import ALLOWED_CITIES  # noqa: E402
 
 DEFAULT_TARGET_COUNT = 100
 DEFAULT_RELOAD_URL = "https://scorton-gtm-backend.onrender.com/api/reload-from-csv"
-DEFAULT_INTENT = "high"
-
-ACTUAL_COMPANIES_FIELDNAMES = [
-    "company",
-    "website",
-    "industry",
-    "city",
-    "employee_count",
-    "intent",
-    "signal_score",
-    "buyer_name",
-    "job_title",
-    "work_email",
-]
-
-
-def _normalize_website(raw: str) -> str:
-    website = (raw or "").strip()
-    if not website:
-        return ""
-    if not website.startswith(("http://", "https://")):
-        website = f"https://{website}"
-    return website
-
-
-def _parse_employee_count(raw: object) -> int:
-    text = str(raw or "").strip()
-    if text.isdigit():
-        return int(text)
-    digits = "".join(char for char in text if char.isdigit())
-    return int(digits) if digits else 100
-
-
-def _default_signal_score(employee_count: int) -> int:
-    return min(97, max(82, 70 + employee_count // 25))
-
-
-def format_company_for_csv(
-    company: dict[str, Any],
-    contact: dict[str, str],
-) -> dict[str, str]:
-    """Map PDL company + buyer contact into actual_companies.csv row shape."""
-    employee_count = _parse_employee_count(company.get("employee_count") or company.get("size"))
-    city = normalize_city_name(company.get("city") or company.get("locality") or "") or ""
-
-    return {
-        "company": company["name"],
-        "website": _normalize_website(company.get("website") or ""),
-        "industry": company.get("industry") or "Financial Services",
-        "city": city,
-        "employee_count": str(employee_count),
-        "intent": DEFAULT_INTENT,
-        "signal_score": str(_default_signal_score(employee_count)),
-        "buyer_name": contact.get("buyer_name") or "",
-        "job_title": contact.get("job_title") or "",
-        "work_email": contact.get("work_email") or "",
-    }
-
-
-def _row_is_complete(row: dict[str, str]) -> bool:
-    city = normalize_city_name(row.get("city") or "")
-    if not city or city not in ALLOWED_CITIES:
-        return False
-    required = ("company", "website", "industry", "buyer_name", "job_title", "work_email")
-    return all(str(row.get(field) or "").strip() for field in required)
-
-
-def fetch_target_list(
-    *,
-    target_count: int,
-    api_key: str,
-) -> list[dict[str, str]]:
-    """Fetch companies from PDL and attach buyer contacts."""
-    companies = fetch_fintech_and_accounting_companies(
-        target_count=max(target_count * 2, target_count + 25),
-        api_key=api_key,
-    )
-
-    rows: list[dict[str, str]] = []
-    skipped_no_contact = 0
-
-    for index, company in enumerate(companies, start=1):
-        print(f"[{index}/{len(companies)}] Resolving contact for {company['name']}...", flush=True)
-        try:
-            contact = search_buyer_contact(
-                company_name=company["name"],
-                website=company.get("website") or "",
-                industry=company.get("industry") or "",
-                api_key=api_key,
-            )
-        except PDLPersonSearchError as exc:
-            print(f"  Skipped (person search error): {exc}", flush=True)
-            skipped_no_contact += 1
-            continue
-
-        if not contact:
-            print("  Skipped (no buyer contact found in PDL)", flush=True)
-            skipped_no_contact += 1
-            continue
-
-        row = format_company_for_csv(company, contact)
-        if not _row_is_complete(row):
-            print(
-                f"  Skipped (incomplete row — city={row.get('city')!r}, "
-                f"email={bool(row.get('work_email'))})",
-                flush=True,
-            )
-            skipped_no_contact += 1
-            continue
-
-        rows.append(row)
-        if len(rows) >= target_count:
-            break
-
-    print(
-        f"Prepared {len(rows)} complete rows "
-        f"(skipped {skipped_no_contact} without usable contact/location).",
-        flush=True,
-    )
-    if not rows:
-        raise RuntimeError("No complete Fintech/Accounting rows could be built from PDL.")
-    return rows
-
-
-def _read_existing_company_names(csv_path: Path) -> set[str]:
-    if not csv_path.exists():
-        return set()
-    with csv_path.open(encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        return {
-            (row.get("company") or row.get("Company") or "").strip().lower()
-            for row in reader
-            if (row.get("company") or row.get("Company") or "").strip()
-        }
 
 
 def append_rows_to_csv(csv_path: Path, rows: list[dict[str, str]]) -> dict[str, int]:
     """Append new rows to actual_companies.csv, skipping duplicate company names."""
-    existing_names = _read_existing_company_names(csv_path)
-    to_append = [
-        row for row in rows if row["company"].strip().lower() not in existing_names
-    ]
+    existing_names, existing_domains = load_existing_lead_keys(csv_path)
+    initial_count = len(existing_names)
+    to_append = []
+    for row in rows:
+        name_key = normalize_company_key(row["company"])
+        domain_key = normalize_domain_key(row.get("website", ""))
+        if name_key in existing_names:
+            continue
+        if domain_key and domain_key in existing_domains:
+            continue
+        to_append.append(row)
+        existing_names.add(name_key)
+        if domain_key:
+            existing_domains.add(domain_key)
 
     write_header = not csv_path.exists() or csv_path.stat().st_size == 0
     csv_path.parent.mkdir(parents=True, exist_ok=True)
@@ -199,7 +76,7 @@ def append_rows_to_csv(csv_path: Path, rows: list[dict[str, str]]) -> dict[str, 
     return {
         "appended": len(to_append),
         "skipped_duplicates": len(rows) - len(to_append),
-        "total_in_file": len(existing_names) + len(to_append),
+        "total_in_file": initial_count + len(to_append),
     }
 
 
@@ -244,6 +121,12 @@ def main() -> None:
         help="Path to actual_companies.csv (default: project root)",
     )
     parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Write batch to this CSV instead of appending to actual_companies.csv",
+    )
+    parser.add_argument(
         "--reload-url",
         default=None,
         help="Override reload endpoint URL",
@@ -267,13 +150,29 @@ def main() -> None:
         raise SystemExit(1) from exc
 
     try:
-        rows = fetch_target_list(target_count=args.count, api_key=api_key)
+        rows, report = generate_verified_lead_batch(
+            target_count=args.count,
+            api_key=api_key,
+            existing_csv=args.csv,
+        )
     except (PDLAPIError, RuntimeError) as exc:
         print(f"FATAL: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
 
     if args.dry_run:
-        print({"dry_run": True, "rows_prepared": len(rows), "sample": rows[:3]})
+        print(
+            {
+                "dry_run": True,
+                "rows_prepared": len(rows),
+                "report": report.__dict__,
+                "sample": rows[:3],
+            }
+        )
+        return
+
+    if args.output:
+        write_lead_batch_csv(rows, args.output)
+        print({"output": str(args.output.resolve()), "verified": len(rows), "report": report.__dict__})
         return
 
     append_stats = append_rows_to_csv(args.csv, rows)
