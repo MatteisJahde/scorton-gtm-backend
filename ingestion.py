@@ -40,7 +40,7 @@ def _passes_filters(company: dict) -> bool:
     return True
 
 
-def ingest_companies(db: Session) -> dict:
+def ingest_companies(db: Session, companies: list | None = None) -> dict:
     if not actual_companies_available():
         return {
             "inserted": 0,
@@ -49,7 +49,10 @@ def ingest_companies(db: Session) -> dict:
             "source": "actual_companies.csv",
         }
 
-    companies, csv_report = load_actual_companies_with_report()
+    if companies is None:
+        companies, csv_report = load_actual_companies_with_report()
+    else:
+        csv_report = None
     if not companies:
         return {
             "inserted": 0,
@@ -57,10 +60,10 @@ def ingest_companies(db: Session) -> dict:
             "error": "actual_companies.csv contains no valid company rows",
             "source": "actual_companies.csv",
             "csv_validation": {
-                "accepted": csv_report.accepted,
-                "rejected": csv_report.rejected,
+                "accepted": csv_report.accepted if csv_report else 0,
+                "rejected": csv_report.rejected if csv_report else [],
                 "allowed_cities": sorted(ALLOWED_CITIES),
-                "verification": verification_report_dict(csv_report),
+                "verification": verification_report_dict(csv_report) if csv_report else {},
             },
         }
 
@@ -117,9 +120,9 @@ def ingest_companies(db: Session) -> dict:
         "skipped": skipped,
         "source": "actual_companies.csv",
         "csv_validation": {
-            "accepted": csv_report.accepted,
-            "rejected": csv_report.rejected,
+            "accepted": csv_report.accepted if csv_report else len(companies),
+            "rejected": csv_report.rejected if csv_report else [],
             "allowed_cities": sorted(ALLOWED_CITIES),
-            "verification": verification_report_dict(csv_report),
+            "verification": verification_report_dict(csv_report) if csv_report else {},
         },
     }

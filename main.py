@@ -1,6 +1,8 @@
+import asyncio
 import csv
 import traceback
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -56,6 +58,12 @@ from services.url_utils import (
     website_display_status,
 )
 from services.contact_fields import attach_contact_aliases
+from services.lead_parity import verify_lead_count_parity
+from services.zerobounce_async import (
+    ZEROBOUNCE_RATE_LIMIT_DELAY_SECONDS,
+    apply_zerobounce_to_extras,
+    verify_email_with_zerobounce,
+)
 
 app = FastAPI(title="Scorton GTM API", version="1.0.0")
 
@@ -174,55 +182,100 @@ def _contact_to_dict(contact: Contact) -> dict:
     }
 
 
-# Force-load the correct file on startup
+# Force-load the correct file on startup (background task only — never at import).
 DATA_FILE_PATH = "actual_companies.csv"
+_db_initialization_complete = False
+_db_initialization_finished_at: Optional[str] = None
+_initialization_parity: dict[str, Any] = {}
 
 
-def initialize_database(data_file_path: str) -> None:
-    """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
-    try:
-        print("[database] Initializing SQLite database...", flush=True)
-        Base.metadata.create_all(bind=engine)
-        migrate_db()
-        _load_seed_data(data_file_path)
-    except Exception as exc:
+async def _verify_leads_with_zerobounce(companies: list[dict[str, Any]]) -> None:
+    """Run ZeroBounce validation for every CSV lead before database ingest."""
+    total = len(companies)
+    print(f"[zerobounce] Validating {total} lead emails...", flush=True)
+
+    for index, company in enumerate(companies, start=1):
+        company_name = str(company.get("name") or "").strip()
+        extras = get_company_csv_extras(company_name) or dict(company.get("csv_extras") or {})
+        work_email = str(extras.get("work_email") or "").strip()
+
+        if not work_email:
+            print(f"[zerobounce] ({index}/{total}) {company_name}: no work_email — skipped", flush=True)
+            continue
+
+        result = await verify_email_with_zerobounce(work_email)
+        apply_zerobounce_to_extras(extras, result)
+        company["csv_extras"] = extras
+
         print(
-            f"[database] Startup initialization failed (server will continue): {exc}",
+            f"[zerobounce] ({index}/{total}) {company_name} <{work_email}> -> "
+            f"{result.get('zerobounce_status')} ({extras.get('zerobounce_email_status')})",
             flush=True,
         )
-        traceback.print_exc()
+
+        if index < total:
+            await asyncio.sleep(ZEROBOUNCE_RATE_LIMIT_DELAY_SECONDS)
 
 
-def _load_seed_data(data_file_path: str) -> None:
-    """Force-ingest companies from CSV and rebuild the target dataset."""
-    csv_path = Path(__file__).resolve().parent / data_file_path
-    print(f"FORCING LOAD: {csv_path}", flush=True)
+def _setup_database_schema() -> None:
+    print("[database] Step 1/2: creating tables...", flush=True)
+    Base.metadata.create_all(bind=engine)
+    print("[database] Step 2/2: running migrations...", flush=True)
+    migrate_db()
 
-    if not csv_path.exists():
-        print(f"FORCING LOAD: file not found — {csv_path}", flush=True)
-        return
 
+def _persist_companies_to_database(
+    companies: list[dict[str, Any]],
+) -> tuple[bool, dict[str, Any]]:
+    """
+    Ingest pre-validated companies and rebuild the target dataset.
+
+    Returns (success, parity_report).
+    """
+    global _initialization_parity
     db = SessionLocal()
     try:
+        print("[database] Clearing existing company records...", flush=True)
         db.query(TargetAccount).delete()
         db.query(Contact).delete()
         db.query(Company).delete()
         db.commit()
 
-        companies, _report = load_actual_companies_with_report(csv_path)
-        if not companies:
-            print("FORCING LOAD: no valid rows found in CSV.", flush=True)
-            return
-
-        ingest_result = ingest_companies(db)
+        processed_count = len(companies)
+        print(f"[database] Ingesting {processed_count} companies...", flush=True)
+        ingest_result = ingest_companies(db, companies=companies)
         if ingest_result.get("error"):
-            print(f"FORCING LOAD: ingest failed — {ingest_result}", flush=True)
-            return
+            print(f"[database] Ingest failed: {ingest_result}", flush=True)
+            _initialization_parity = {
+                "ok": False,
+                "processed": processed_count,
+                "saved": 0,
+                "message": str(ingest_result.get("error")),
+            }
+            return False, _initialization_parity
 
+        saved_count = int(ingest_result.get("inserted") or 0)
+        parity = verify_lead_count_parity(processed=processed_count, saved=saved_count)
+        _initialization_parity = parity
+        print(f"[parity] {parity['message']}", flush=True)
+
+        if not parity["ok"]:
+            print(
+                "[parity] ERROR: stopping initialization — lead counts do not match. "
+                f"Skipped during ingest: {ingest_result.get('skipped', 0)}",
+                flush=True,
+            )
+            db.query(TargetAccount).delete()
+            db.query(Contact).delete()
+            db.query(Company).delete()
+            db.commit()
+            return False, parity
+
+        print("[database] Building target dataset...", flush=True)
         build_result = build_target_dataset(db)
         verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
         print(
-            f"[startup] Lead verification — Verified: {verification.get('verified', 0)} | "
+            f"[database] Lead verification — Verified: {verification.get('verified', 0)} | "
             f"Unverified: {verification.get('unverified', 0)}",
             flush=True,
         )
@@ -230,11 +283,75 @@ def _load_seed_data(data_file_path: str) -> None:
             {
                 "startup_ingest": ingest_result,
                 "startup_build_target_dataset": build_result,
+                "lead_parity": parity,
             },
             flush=True,
         )
+        return True, parity
+    except Exception as exc:
+        print(f"[database] Persist FAILED: {exc}", flush=True)
+        traceback.print_exc()
+        raise
     finally:
         db.close()
+
+
+async def _initialize_database_async(data_file_path: str) -> None:
+    """Async startup path: schema setup → CSV parse → ZeroBounce → DB persist."""
+    global _db_initialization_complete, _db_initialization_finished_at
+    csv_path = Path(__file__).resolve().parent / data_file_path
+    print(f"[database] CSV path: {csv_path}", flush=True)
+
+    if not csv_path.exists():
+        print(f"[database] CSV not found — skipping ingest: {csv_path}", flush=True)
+        return
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _setup_database_schema)
+
+    print("[database] Parsing CSV rows...", flush=True)
+    companies, _report = await loop.run_in_executor(
+        None, load_actual_companies_with_report, csv_path
+    )
+    if not companies:
+        print("[database] No valid rows found in CSV.", flush=True)
+        return
+
+    scraper_count = len(companies)
+    await _verify_leads_with_zerobounce(companies)
+
+    if len(companies) != scraper_count:
+        print(
+            f"[parity] ERROR: ZeroBounce step dropped leads "
+            f"({scraper_count} -> {len(companies)}). Stopping initialization.",
+            flush=True,
+        )
+        return
+
+    success, parity = await loop.run_in_executor(
+        None, _persist_companies_to_database, companies
+    )
+    if not success:
+        print("[database] Initialization halted due to lead parity failure.", flush=True)
+        return
+
+    _db_initialization_complete = True
+    _db_initialization_finished_at = datetime.now(timezone.utc).isoformat()
+    print("[database] Initialization completed successfully.", flush=True)
+
+
+def initialize_database(data_file_path: str) -> None:
+    """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
+    try:
+        asyncio.run(_initialize_database_async(data_file_path))
+    except Exception as exc:
+        print(f"[database] Initialization FAILED: {exc}", flush=True)
+        traceback.print_exc()
+
+
+def _load_seed_data(data_file_path: str) -> None:
+    """Backward-compatible sync CSV load wrapper."""
+    initialize_database(data_file_path)
 
 
 def load_data(data_file_path: str) -> None:
@@ -242,17 +359,32 @@ def load_data(data_file_path: str) -> None:
     initialize_database(data_file_path)
 
 
+async def _run_background_initialization() -> None:
+    """Load CSV data after the HTTP server is already accepting connections."""
+    try:
+        print("[startup] Background CSV initialization starting...", flush=True)
+        await _initialize_database_async(DATA_FILE_PATH)
+        print("[startup] Background CSV initialization finished.", flush=True)
+    except Exception as exc:
+        print(f"[startup] Background CSV initialization FAILED: {exc}", flush=True)
+        traceback.print_exc()
+
+
 @app.on_event("startup")
-async def startup_event():
-    # Force the engine to load the verified 19-company list immediately
-    print(f"FORCING LOAD: {DATA_FILE_PATH}", flush=True)
-    initialize_database(DATA_FILE_PATH)
+async def startup_event() -> None:
+    print("[startup] HTTP server ready — port should be open for health checks.", flush=True)
+    asyncio.create_task(_run_background_initialization())
 
 
 @app.get("/health")
 def health():
     return json_success(
-        {"status": "ok"},
+        {
+            "status": "ok",
+            "db_ready": _db_initialization_complete,
+            "initialization_finished_at": _db_initialization_finished_at,
+            "lead_parity": _initialization_parity,
+        },
         meta={"environment": ENVIRONMENT, "api_base_url": API_BASE_URL},
     )
 
@@ -440,6 +572,10 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
                 "contact_role": lead.get("contact_role"),
                 "verified_email": lead.get("verified_email"),
                 "contact_status": lead.get("contact_status"),
+                "email_status": lead.get("email_status"),
+                "zerobounce_status": lead.get("zerobounce_status"),
+                "zerobounce_sub_status": lead.get("zerobounce_sub_status"),
+                "zerobounce_email_status": lead.get("zerobounce_email_status"),
                 "lead_verification_status": lead.get("lead_verification_status"),
                 "verification_status": lead.get("verification_status"),
                 "contact_verification_status": lead.get("contact_verification_status"),
@@ -451,7 +587,16 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
     """Build dashboard summary: counts plus top high-intent leads by score."""
     if not leads:
-        return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
+        return {
+            "total_leads": 0,
+            "high_intent_leads": 0,
+            "top_leads": [],
+            "diagnostics": {
+                "db_ready": _db_initialization_complete,
+                "initialization_finished_at": _db_initialization_finished_at,
+                "lead_parity": _initialization_parity,
+            },
+        }
 
     unique_leads, _report = deduplicate_company_records(leads, label="leads_summary")
     _log_leads_summary_city_debug(unique_leads, context="all deduplicated leads")
@@ -484,6 +629,11 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
         "total_leads": total_leads,
         "high_intent_leads": len(high_intent_df),
         "top_leads": _serialize_lead_records(top_100_leads),
+        "diagnostics": {
+            "db_ready": _db_initialization_complete,
+            "initialization_finished_at": _db_initialization_finished_at,
+            "lead_parity": _initialization_parity,
+        },
     }
 
 
