@@ -40,15 +40,31 @@ export type LeadSummary = {
     | "Unverified"
     | string
     | null;
+  email_provider?: string | null;
+  zerobounce_status?: string | null;
+  zerobounce_sub_status?: string | null;
   lead_verification_status?: string | null;
   verification_status?: string | null;
   contact_verification_status?: string | null;
+};
+
+export type LeadsDiagnostics = {
+  db_ready: boolean;
+  initialization_finished_at?: string | null;
+  verification_summary?: {
+    valid_emails: number;
+    invalid_emails: number;
+    failed_or_unknown_emails: number;
+    missing_verification_fields: number;
+  };
+  api_base_url?: string;
 };
 
 export type LeadsSummaryResponse = {
   total_leads: number;
   high_intent_leads: number;
   top_leads: LeadSummary[];
+  diagnostics?: LeadsDiagnostics;
 };
 
 export type DashboardMetricsResponse = {

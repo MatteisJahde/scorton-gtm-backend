@@ -3,6 +3,7 @@ import csv
 import os
 import traceback
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -186,6 +187,7 @@ def _contact_to_dict(contact: Contact) -> dict:
 # Force-load the correct file on startup (background task only — never at import).
 DATA_FILE_PATH = "actual_companies.csv"
 _db_initialization_complete = False
+_db_initialization_finished_at: Optional[str] = None
 
 
 def _email_status_from_zerobounce_payload(payload: dict[str, Any]) -> str:
@@ -374,6 +376,7 @@ async def _initialize_database_async(data_file_path: str) -> None:
     await loop.run_in_executor(None, _persist_companies_to_database, companies)
 
     _db_initialization_complete = True
+    _db_initialization_finished_at = datetime.now(timezone.utc).isoformat()
     print("[database] Initialization completed successfully.", flush=True)
 
 
@@ -419,6 +422,7 @@ def health():
         {
             "status": "ok",
             "db_ready": _db_initialization_complete,
+            "initialization_finished_at": _db_initialization_finished_at,
         },
         meta={"environment": ENVIRONMENT, "api_base_url": API_BASE_URL},
     )
@@ -430,6 +434,7 @@ def api_health():
         {
             "status": "ok",
             "db_ready": _db_initialization_complete,
+            "initialization_finished_at": _db_initialization_finished_at,
         },
         meta={"environment": ENVIRONMENT, "api_base_url": API_BASE_URL},
     )
@@ -570,6 +575,50 @@ def _format_lead_city_display(raw_city: Optional[str]) -> Optional[str]:
     return normalize_city_name(raw_city)
 
 
+def _verification_summary_from_leads(leads: list[dict]) -> dict[str, int]:
+    """Aggregate ZeroBounce / email_status counts for dashboard diagnostics."""
+    valid = 0
+    invalid = 0
+    failed_check = 0
+    missing_fields = 0
+
+    for lead in leads:
+        email_status = str(lead.get("email_status") or "").strip().lower()
+        zb_status = str(lead.get("zerobounce_status") or "").strip().lower()
+
+        if not lead.get("email_status") and not lead.get("zerobounce_status"):
+            missing_fields += 1
+
+        if email_status == "verified" or zb_status == "valid":
+            valid += 1
+        elif email_status in {"invalid", "risky", "role account", "suppressed"} or zb_status in {
+            "invalid",
+            "spamtrap",
+            "abuse",
+            "do_not_mail",
+        }:
+            invalid += 1
+
+        if email_status in {"error", "unknown", "unverified"} or zb_status in {"error", "unknown"}:
+            failed_check += 1
+
+    return {
+        "valid_emails": valid,
+        "invalid_emails": invalid,
+        "failed_or_unknown_emails": failed_check,
+        "missing_verification_fields": missing_fields,
+    }
+
+
+def _diagnostics_payload(leads: list[dict]) -> dict[str, Any]:
+    return {
+        "db_ready": _db_initialization_complete,
+        "initialization_finished_at": _db_initialization_finished_at,
+        "verification_summary": _verification_summary_from_leads(leads),
+        "api_base_url": API_BASE_URL,
+    }
+
+
 def _log_leads_summary_city_debug(leads: list[dict], *, context: str) -> None:
     """Print unique city values to help debug location column mapping."""
     raw_cities = [_raw_lead_city(lead) for lead in leads]
@@ -626,7 +675,12 @@ def _leads_to_dataframe(leads: list[dict]) -> pd.DataFrame:
 def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> dict:
     """Build dashboard summary: counts plus top high-intent leads by score."""
     if not leads:
-        return {"total_leads": 0, "high_intent_leads": 0, "top_leads": []}
+        return {
+            "total_leads": 0,
+            "high_intent_leads": 0,
+            "top_leads": [],
+            "diagnostics": _diagnostics_payload([]),
+        }
 
     unique_leads, _report = deduplicate_company_records(leads, label="leads_summary")
     _log_leads_summary_city_debug(unique_leads, context="all deduplicated leads")
@@ -659,6 +713,7 @@ def build_leads_summary(leads: list[dict], *, top_n: int = TOP_LEADS_LIMIT) -> d
         "total_leads": total_leads,
         "high_intent_leads": len(high_intent_df),
         "top_leads": _serialize_lead_records(top_100_leads),
+        "diagnostics": _diagnostics_payload(unique_leads),
     }
 
 
