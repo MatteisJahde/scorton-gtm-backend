@@ -1,14 +1,20 @@
+"""
+Scorton GTM API — crash-proof Render entrypoint.
+
+Render start command (recommended):
+  uvicorn main:app --host 0.0.0.0 --port $PORT --log-level debug
+"""
+
 import asyncio
 import csv
 import os
+import time
 import traceback
 from collections import Counter
 from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-import uvicorn
 
 
 def log_startup_step(step: str, detail: str = "") -> None:
@@ -19,22 +25,70 @@ def log_startup_step(step: str, detail: str = "") -> None:
     print(message, flush=True)
 
 
-def validate_required_environment() -> None:
-    """Log missing required env vars without crashing the process."""
+def pause_for_log_inspection(reason: str, exc: Optional[BaseException] = None) -> None:
+    """Print diagnostics and keep the process alive briefly for Render log capture."""
+    print(f"[startup] DEBUG PAUSE: {reason}", flush=True)
+    if exc is not None:
+        traceback.print_exception(type(exc), exc, exc.__traceback__)
+    else:
+        traceback.print_exc()
+    print(
+        "[startup] sleeping 60 seconds to keep process alive for Render log inspection...",
+        flush=True,
+    )
+    time.sleep(60)
+
+
+def verify_dependencies() -> None:
+    """Import required third-party libraries and log SUCCESS for each."""
+    required_packages = (
+        ("httpx", "httpx"),
+        ("fastapi", "fastapi"),
+        ("uvicorn", "uvicorn"),
+        ("pandas", "pandas"),
+        ("sqlalchemy", "sqlalchemy"),
+        ("requests", "requests"),
+        ("pydantic", "pydantic"),
+        ("multipart", "multipart"),
+    )
+    for label, module_name in required_packages:
+        try:
+            __import__(module_name)
+            log_startup_step("dependency", f"SUCCESS: {label}")
+        except Exception as exc:
+            log_startup_step("dependency", f"FAILED: {label} — {exc}")
+            raise
+
+
+def check_required_environment() -> List[str]:
+    """Return names of required environment variables that are missing."""
+    missing: List[str] = []
     zb_key = (os.getenv("ZEROBOUNCE_API_KEY") or os.getenv("ZEROBOUNCE_KEY") or "").strip()
     if not zb_key:
-        print(
-            "[env] ERROR: ZEROBOUNCE_API_KEY is not set. "
-            "ZeroBounce verification will be skipped until this variable is configured in Render.",
-            flush=True,
-        )
-    else:
-        print("[env] ZEROBOUNCE_API_KEY is configured.", flush=True)
+        missing.append("ZEROBOUNCE_API_KEY")
+    return missing
 
 
-log_startup_step("boot", "process started — validating environment")
-validate_required_environment()
+def enforce_required_environment() -> None:
+    """Log MISSING_ENV lines and pause so Render logs remain readable."""
+    missing = check_required_environment()
+    if not missing:
+        log_startup_step("env", "all required environment variables are present")
+        return
+    for var_name in missing:
+        print(f"MISSING_ENV: {var_name}", flush=True)
+    pause_for_log_inspection("required environment variable(s) missing")
 
+
+log_startup_step("boot", "crash-proof entrypoint — verifying dependencies")
+try:
+    verify_dependencies()
+except Exception as dep_exc:
+    pause_for_log_inspection("dependency verification failed", dep_exc)
+
+enforce_required_environment()
+
+import uvicorn
 import pandas as pd
 from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
@@ -367,34 +421,53 @@ async def _run_background_initialization() -> None:
     except Exception as exc:
         log_startup_step("background", f"CSV initialization FAILED: {exc}")
         traceback.print_exc()
+        pause_for_log_inspection("background CSV initialization failed", exc)
 
 
 @asynccontextmanager
 async def app_lifespan(_: FastAPI):
     """Keep uvicorn running while CSV/ZeroBounce init happens in the background."""
     global _background_initialization_task
-    log_startup_step("lifespan", "FastAPI lifespan startup — binding HTTP server")
-    _background_initialization_task = asyncio.create_task(_run_background_initialization())
-    log_startup_step("lifespan", "yielding to uvicorn — process will remain running")
-    yield
-    log_startup_step("lifespan", "shutdown requested — cancelling background task")
-    if _background_initialization_task is not None:
-        _background_initialization_task.cancel()
-        with suppress(asyncio.CancelledError):
-            await _background_initialization_task
-    log_startup_step("lifespan", "shutdown complete")
+    try:
+        log_startup_step("lifespan", "FastAPI lifespan startup — binding HTTP server")
+        _background_initialization_task = asyncio.create_task(_run_background_initialization())
+        log_startup_step("lifespan", "yielding to uvicorn — process will remain running")
+        yield
+    except Exception as exc:
+        log_startup_step("lifespan", f"startup failed: {exc}")
+        traceback.print_exc()
+        pause_for_log_inspection("FastAPI lifespan startup failed", exc)
+        raise
+    finally:
+        log_startup_step("lifespan", "shutdown requested — cancelling background task")
+        if _background_initialization_task is not None:
+            _background_initialization_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await _background_initialization_task
+        log_startup_step("lifespan", "shutdown complete")
 
 
-log_startup_step("boot", "creating FastAPI application")
-app = FastAPI(title="Scorton GTM API", version="1.0.0", lifespan=app_lifespan)
+try:
+    log_startup_step("boot", "creating FastAPI application")
+    app = FastAPI(title="Scorton GTM API", version="1.0.0", lifespan=app_lifespan)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+except Exception as app_exc:
+    pause_for_log_inspection("FastAPI application initialization failed", app_exc)
+    app = FastAPI(title="Scorton GTM API (degraded)", version="1.0.0")
+
+    @app.get("/health")
+    def degraded_health():
+        return {
+            "status": "degraded",
+            "error": "Application failed to initialize — check Render logs.",
+        }
 
 
 @app.exception_handler(HTTPException)
@@ -1113,13 +1186,29 @@ def export_target_dataset_xlsx_endpoint(db: Session = Depends(get_db)):
     )
 
 
+def run_crash_proof_server() -> None:
+    """Start uvicorn in the foreground with verbose logging for Render debugging."""
+    try:
+        enforce_required_environment()
+        port = int(os.environ.get("PORT", "10000"))
+        log_startup_step(
+            "main",
+            f"starting uvicorn main:app on 0.0.0.0:{port} with --log-level debug",
+        )
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=port,
+            reload=False,
+            log_level="debug",
+        )
+    except Exception as exc:
+        pause_for_log_inspection("uvicorn startup failed", exc)
+
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "10000"))
-    log_startup_step("main", f"starting uvicorn on 0.0.0.0:{port}")
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=port,
-        reload=False,
-        log_level="info",
-    )
+    try:
+        log_startup_step("boot", "running crash-proof __main__ entrypoint")
+        run_crash_proof_server()
+    except Exception as exc:
+        pause_for_log_inspection("unhandled error in __main__ entrypoint", exc)
