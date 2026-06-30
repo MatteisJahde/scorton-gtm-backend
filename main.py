@@ -1,10 +1,39 @@
 import asyncio
 import csv
+import os
 import traceback
 from collections import Counter
+from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+import uvicorn
+
+
+def log_startup_step(step: str, detail: str = "") -> None:
+    """Emit a flush-safe log line for Render startup troubleshooting."""
+    message = f"[startup] STEP: {step}"
+    if detail:
+        message = f"{message} | {detail}"
+    print(message, flush=True)
+
+
+def validate_required_environment() -> None:
+    """Log missing required env vars without crashing the process."""
+    zb_key = (os.getenv("ZEROBOUNCE_API_KEY") or os.getenv("ZEROBOUNCE_KEY") or "").strip()
+    if not zb_key:
+        print(
+            "[env] ERROR: ZEROBOUNCE_API_KEY is not set. "
+            "ZeroBounce verification will be skipped until this variable is configured in Render.",
+            flush=True,
+        )
+    else:
+        print("[env] ZEROBOUNCE_API_KEY is configured.", flush=True)
+
+
+log_startup_step("boot", "process started — validating environment")
+validate_required_environment()
 
 import pandas as pd
 from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, UploadFile
@@ -65,16 +94,6 @@ from services.zerobounce_async import (
     verify_email_with_zerobounce,
 )
 
-app = FastAPI(title="Scorton GTM API", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 api_router = APIRouter(prefix="/api")
 
 QUALIFIED_BATCH_SIZE = 100
@@ -115,42 +134,6 @@ def json_success(data: Any, *, meta: Optional[Dict[str, Any]] = None) -> Dict[st
     return payload
 
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    detail = exc.detail
-    if not isinstance(detail, str):
-        detail = str(detail)
-    return json_error(
-        status_code=exc.status_code,
-        error=detail,
-        path=str(request.url.path),
-    )
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request,
-    exc: RequestValidationError,
-) -> JSONResponse:
-    return json_error(
-        status_code=422,
-        error="Validation error",
-        detail=exc.errors(),
-        path=str(request.url.path),
-    )
-
-
-@app.exception_handler(Exception)
-async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    detail = str(exc) if ENVIRONMENT == "development" else None
-    return json_error(
-        status_code=500,
-        error="Internal server error",
-        detail=detail,
-        path=str(request.url.path),
-    )
-
-
 def _company_to_dict(company: Company) -> dict:
     return {
         "id": company.id,
@@ -189,10 +172,13 @@ _db_initialization_finished_at: Optional[str] = None
 _initialization_parity: dict[str, Any] = {}
 
 
+_background_initialization_task: Optional[asyncio.Task[None]] = None
+
+
 async def _verify_leads_with_zerobounce(companies: list[dict[str, Any]]) -> None:
     """Run ZeroBounce validation for every CSV lead before database ingest."""
     total = len(companies)
-    print(f"[zerobounce] Validating {total} lead emails...", flush=True)
+    log_startup_step("zerobounce", f"validating {total} lead emails")
 
     for index, company in enumerate(companies, start=1):
         company_name = str(company.get("name") or "").strip()
@@ -218,9 +204,9 @@ async def _verify_leads_with_zerobounce(companies: list[dict[str, Any]]) -> None
 
 
 def _setup_database_schema() -> None:
-    print("[database] Step 1/2: creating tables...", flush=True)
+    log_startup_step("database", "creating tables")
     Base.metadata.create_all(bind=engine)
-    print("[database] Step 2/2: running migrations...", flush=True)
+    log_startup_step("database", "running migrations")
     migrate_db()
 
 
@@ -235,14 +221,14 @@ def _persist_companies_to_database(
     global _initialization_parity
     db = SessionLocal()
     try:
-        print("[database] Clearing existing company records...", flush=True)
+        log_startup_step("database", "clearing existing company records")
         db.query(TargetAccount).delete()
         db.query(Contact).delete()
         db.query(Company).delete()
         db.commit()
 
         processed_count = len(companies)
-        print(f"[database] Ingesting {processed_count} companies...", flush=True)
+        log_startup_step("database", f"ingesting {processed_count} companies")
         ingest_result = ingest_companies(db, companies=companies)
         if ingest_result.get("error"):
             print(f"[database] Ingest failed: {ingest_result}", flush=True)
@@ -257,13 +243,13 @@ def _persist_companies_to_database(
         saved_count = int(ingest_result.get("inserted") or 0)
         parity = verify_lead_count_parity(processed=processed_count, saved=saved_count)
         _initialization_parity = parity
-        print(f"[parity] {parity['message']}", flush=True)
+        log_startup_step("parity", parity["message"])
 
         if not parity["ok"]:
-            print(
-                "[parity] ERROR: stopping initialization — lead counts do not match. "
+            log_startup_step(
+                "parity",
+                "ERROR — lead counts do not match; rolling back database writes. "
                 f"Skipped during ingest: {ingest_result.get('skipped', 0)}",
-                flush=True,
             )
             db.query(TargetAccount).delete()
             db.query(Contact).delete()
@@ -271,7 +257,7 @@ def _persist_companies_to_database(
             db.commit()
             return False, parity
 
-        print("[database] Building target dataset...", flush=True)
+        log_startup_step("database", "building target dataset")
         build_result = build_target_dataset(db)
         verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
         print(
@@ -299,53 +285,63 @@ def _persist_companies_to_database(
 async def _initialize_database_async(data_file_path: str) -> None:
     """Async startup path: schema setup → CSV parse → ZeroBounce → DB persist."""
     global _db_initialization_complete, _db_initialization_finished_at
+    log_startup_step("initialize", "background database initialization started")
     csv_path = Path(__file__).resolve().parent / data_file_path
-    print(f"[database] CSV path: {csv_path}", flush=True)
+    log_startup_step("initialize", f"CSV path: {csv_path}")
 
     if not csv_path.exists():
-        print(f"[database] CSV not found — skipping ingest: {csv_path}", flush=True)
+        log_startup_step("initialize", f"CSV not found — skipping ingest: {csv_path}")
         return
 
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _setup_database_schema)
 
-    print("[database] Parsing CSV rows...", flush=True)
+    log_startup_step("initialize", "parsing CSV rows")
     companies, _report = await loop.run_in_executor(
         None, load_actual_companies_with_report, csv_path
     )
     if not companies:
-        print("[database] No valid rows found in CSV.", flush=True)
+        log_startup_step("initialize", "no valid rows found in CSV")
         return
 
     scraper_count = len(companies)
+    log_startup_step("initialize", f"scraper loaded {scraper_count} leads")
     await _verify_leads_with_zerobounce(companies)
 
     if len(companies) != scraper_count:
-        print(
-            f"[parity] ERROR: ZeroBounce step dropped leads "
-            f"({scraper_count} -> {len(companies)}). Stopping initialization.",
-            flush=True,
+        log_startup_step(
+            "parity",
+            f"ERROR — ZeroBounce step dropped leads ({scraper_count} -> {len(companies)})",
         )
         return
 
+    log_startup_step("initialize", "persisting companies to database")
     success, parity = await loop.run_in_executor(
         None, _persist_companies_to_database, companies
     )
     if not success:
-        print("[database] Initialization halted due to lead parity failure.", flush=True)
+        log_startup_step(
+            "initialize",
+            "halted after parity failure — HTTP server remains running",
+        )
         return
 
     _db_initialization_complete = True
     _db_initialization_finished_at = datetime.now(timezone.utc).isoformat()
-    print("[database] Initialization completed successfully.", flush=True)
+    log_startup_step("initialize", "completed successfully")
 
 
 def initialize_database(data_file_path: str) -> None:
     """Connect to SQLite, run migrations, and load seed CSV. Never crash startup."""
     try:
-        asyncio.run(_initialize_database_async(data_file_path))
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(_initialize_database_async(data_file_path))
+        else:
+            loop.create_task(_initialize_database_async(data_file_path))
     except Exception as exc:
-        print(f"[database] Initialization FAILED: {exc}", flush=True)
+        log_startup_step("initialize", f"FAILED: {exc}")
         traceback.print_exc()
 
 
@@ -362,18 +358,79 @@ def load_data(data_file_path: str) -> None:
 async def _run_background_initialization() -> None:
     """Load CSV data after the HTTP server is already accepting connections."""
     try:
-        print("[startup] Background CSV initialization starting...", flush=True)
+        log_startup_step("background", "CSV initialization task started")
         await _initialize_database_async(DATA_FILE_PATH)
-        print("[startup] Background CSV initialization finished.", flush=True)
+        log_startup_step(
+            "background",
+            "CSV initialization task finished — uvicorn process stays alive",
+        )
     except Exception as exc:
-        print(f"[startup] Background CSV initialization FAILED: {exc}", flush=True)
+        log_startup_step("background", f"CSV initialization FAILED: {exc}")
         traceback.print_exc()
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
-    print("[startup] HTTP server ready — port should be open for health checks.", flush=True)
-    asyncio.create_task(_run_background_initialization())
+@asynccontextmanager
+async def app_lifespan(_: FastAPI):
+    """Keep uvicorn running while CSV/ZeroBounce init happens in the background."""
+    global _background_initialization_task
+    log_startup_step("lifespan", "FastAPI lifespan startup — binding HTTP server")
+    _background_initialization_task = asyncio.create_task(_run_background_initialization())
+    log_startup_step("lifespan", "yielding to uvicorn — process will remain running")
+    yield
+    log_startup_step("lifespan", "shutdown requested — cancelling background task")
+    if _background_initialization_task is not None:
+        _background_initialization_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await _background_initialization_task
+    log_startup_step("lifespan", "shutdown complete")
+
+
+log_startup_step("boot", "creating FastAPI application")
+app = FastAPI(title="Scorton GTM API", version="1.0.0", lifespan=app_lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    detail = exc.detail
+    if not isinstance(detail, str):
+        detail = str(detail)
+    return json_error(
+        status_code=exc.status_code,
+        error=detail,
+        path=str(request.url.path),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError,
+) -> JSONResponse:
+    return json_error(
+        status_code=422,
+        error="Validation error",
+        detail=exc.errors(),
+        path=str(request.url.path),
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    detail = str(exc) if ENVIRONMENT == "development" else None
+    return json_error(
+        status_code=500,
+        error="Internal server error",
+        detail=detail,
+        path=str(request.url.path),
+    )
 
 
 @app.get("/health")
@@ -1053,4 +1110,16 @@ def export_target_dataset_xlsx_endpoint(db: Session = Depends(get_db)):
         content=xlsx_content,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": 'attachment; filename="target_dataset.xlsx"'},
+    )
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "10000"))
+    log_startup_step("main", f"starting uvicorn on 0.0.0.0:{port}")
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        reload=False,
+        log_level="info",
     )

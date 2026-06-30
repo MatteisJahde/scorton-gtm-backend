@@ -1,3 +1,5 @@
+from typing import Any, List, Optional
+
 from sqlalchemy.orm import Session
 
 from city_utils import normalize_city_name
@@ -40,7 +42,7 @@ def _passes_filters(company: dict) -> bool:
     return True
 
 
-def ingest_companies(db: Session, companies: list | None = None) -> dict:
+def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dict:
     if not actual_companies_available():
         return {
             "inserted": 0,
