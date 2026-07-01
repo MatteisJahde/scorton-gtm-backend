@@ -144,6 +144,7 @@ from services.contact_fields import attach_contact_aliases
 from services.lead_parity import verify_lead_count_parity
 from services.website_maintenance import (
     partition_companies_by_website,
+    purge_unreachable_companies_from_database,
     reverify_and_prune_database_leads,
 )
 from services.zerobounce_async import (
@@ -1110,10 +1111,28 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
 @api_router.post("/reverify-websites")
 def api_reverify_websites(db: Session = Depends(get_db)):
     """Re-check stored lead websites and remove unreachable companies from the dashboard."""
-    result = reverify_and_prune_database_leads(db)
+    result = purge_unreachable_companies_from_database(db)
     return json_success(
         result,
-        meta={"message": "Website re-verification complete"},
+        meta={"message": "Website re-verification and purge complete"},
+    )
+
+
+@api_router.post("/purge-unreachable-companies")
+def api_purge_unreachable_companies(db: Session = Depends(get_db)):
+    """
+    One-off maintenance: HEAD-check every company in the database and delete
+    records where the website is unreachable (non-200, timeout, or invalid URL).
+    """
+    result = purge_unreachable_companies_from_database(db)
+    return json_success(
+        result,
+        meta={
+            "message": (
+                "Unreachable companies deleted. Refresh the Lovable dashboard to "
+                "see cleaned data."
+            ),
+        },
     )
 
 

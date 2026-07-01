@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-from models import Company, TargetAccount
+from models import Company, Contact, TargetAccount
 from services.domain_verification import check_website_head_status_200
 from services.url_utils import normalize_website
 from settings import WEBSITE_VERIFY_MAX_WORKERS
@@ -90,58 +90,79 @@ def partition_companies_by_website(
     }
 
 
-def reverify_and_prune_database_leads(db: Session) -> dict[str, Any]:
-    """
-    Re-check websites for dashboard leads and remove unreachable target accounts.
-
-    Called during CSV refresh / startup so dead sites disappear on the next rebuild.
-    """
-    rows = (
-        db.query(TargetAccount, Company)
-        .join(Company, TargetAccount.company_id == Company.id)
-        .order_by(TargetAccount.id)
-        .all()
+def _delete_company_and_related_rows(db: Session, company: Company) -> None:
+    """Remove dashboard rows and contacts before deleting the company record."""
+    db.query(TargetAccount).filter(TargetAccount.company_id == company.id).delete(
+        synchronize_session=False
     )
-    if not rows:
-        return {"checked": 0, "kept": 0, "removed": 0, "removed_accounts": []}
+    db.query(Contact).filter(Contact.company_id == company.id).delete(
+        synchronize_session=False
+    )
+    db.delete(company)
 
-    kept = 0
-    removed_accounts: list[dict[str, Any]] = []
+
+def purge_unreachable_companies_from_database(db: Session) -> dict[str, Any]:
+    """
+    One-off style cleanup: HEAD-check every company row and delete unreachable records.
+
+    Unreachable means invalid URL format, non-200 HTTP status, timeout, or connection error.
+    Deletes matching TargetAccount, Contact, and Company rows so the dashboard stays clean.
+    """
+    companies = db.query(Company).order_by(Company.id).all()
+    if not companies:
+        return {
+            "checked": 0,
+            "kept": 0,
+            "removed": 0,
+            "kept_companies": [],
+            "removed_companies": [],
+        }
+
     checked_at = datetime.now(timezone.utc)
+    kept_companies: list[dict[str, Any]] = []
+    removed_companies: list[dict[str, Any]] = []
 
-    for account, company in rows:
-        website = normalize_website(account.website or company.website or "")
+    for company in companies:
+        website = normalize_website(company.website or "")
         is_reachable, detail, status_code = check_website_head_status_200(website)
         company.website_reachable = is_reachable
         company.website_http_status = status_code
         company.website_checked_at = checked_at
 
+        record = {
+            "company_id": company.id,
+            "company": company.name,
+            "website": website,
+            "detail": detail,
+            "http_status": status_code,
+            "website_reachable": is_reachable,
+        }
+
         if is_reachable:
-            kept += 1
+            kept_companies.append(record)
             print(
-                f"[website-maint] kept {account.company_name} ({website}) -> {detail}",
+                f"[website-purge] kept {company.name} ({website}) -> {detail}",
                 flush=True,
             )
             continue
 
-        removed_accounts.append(
-            {
-                "company": account.company_name,
-                "website": website,
-                "detail": detail,
-                "http_status": status_code,
-            }
-        )
-        db.delete(account)
+        removed_companies.append(record)
+        _delete_company_and_related_rows(db, company)
         print(
-            f"[website-maint] removed {account.company_name} ({website}) -> {detail}",
+            f"[website-purge] deleted {company.name} ({website}) -> {detail}",
             flush=True,
         )
 
     db.commit()
     return {
-        "checked": len(rows),
-        "kept": kept,
-        "removed": len(removed_accounts),
-        "removed_accounts": removed_accounts,
+        "checked": len(companies),
+        "kept": len(kept_companies),
+        "removed": len(removed_companies),
+        "kept_companies": kept_companies,
+        "removed_companies": removed_companies,
     }
+
+
+def reverify_and_prune_database_leads(db: Session) -> dict[str, Any]:
+    """Backward-compatible alias for full company purge + website re-check."""
+    return purge_unreachable_companies_from_database(db)
