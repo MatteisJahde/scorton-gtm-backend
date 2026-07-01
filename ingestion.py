@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 
 from sqlalchemy.orm import Session
@@ -12,6 +13,7 @@ from seed_data import (
     verification_report_dict,
 )
 from sorting_agent import ALLOWED_CITIES
+from services.domain_verification import check_website_head_status_200
 from services.url_utils import normalize_website
 from services.industry_filter import passes_financial_icp_filter
 from stakeholders import QUALIFIED_SCORE_THRESHOLD, generate_stakeholders
@@ -72,6 +74,8 @@ def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dic
     existing_names = {name for (name,) in db.query(Company.name).all()}
     inserted = 0
     skipped = 0
+    website_unreachable = 0
+    checked_at = datetime.now(timezone.utc)
 
     for company in companies:
         if not _passes_filters(company):
@@ -81,6 +85,17 @@ def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dic
             skipped += 1
             continue
 
+        website = normalize_website(company.get("website") or "")
+        is_reachable, detail, status_code = check_website_head_status_200(website)
+        if not is_reachable:
+            website_unreachable += 1
+            skipped += 1
+            print(
+                f"[ingest] skipped {company['name']} ({website}) — unreachable ({detail})",
+                flush=True,
+            )
+            continue
+
         company_score = score_company(company)
         city = normalize_city_name(company.get("city") or company.get("locality"))
         if not city:
@@ -88,7 +103,6 @@ def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dic
             continue
 
         employee_count = company.get("employee_count")
-        website = normalize_website(company.get("website") or "")
         linkedin_url = company.get("linkedin_url")
 
         company_obj = Company(
@@ -105,6 +119,9 @@ def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dic
             employee_count=employee_count,
             score=company_score,
             priority_tier=priority_tier(company_score),
+            website_reachable=True,
+            website_http_status=status_code,
+            website_checked_at=checked_at,
         )
         db.add(company_obj)
         db.flush()
@@ -120,6 +137,7 @@ def ingest_companies(db: Session, companies: Optional[List[dict]] = None) -> dic
     return {
         "inserted": inserted,
         "skipped": skipped,
+        "website_unreachable": website_unreachable,
         "source": "actual_companies.csv",
         "csv_validation": {
             "accepted": csv_report.accepted if csv_report else len(companies),

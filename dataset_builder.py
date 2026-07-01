@@ -395,7 +395,11 @@ def build_target_dataset(db: Session) -> dict:
 
     enriched_records: List[dict] = []
     unverified_excluded = 0
+    website_unreachable_excluded = 0
     for index, company in enumerate(companies):
+        if company.website_reachable is False:
+            website_unreachable_excluded += 1
+            continue
         enriched = enrich_company(company, index)
         if enriched.get("_drop_lead"):
             unverified_excluded += 1
@@ -449,6 +453,7 @@ def build_target_dataset(db: Session) -> dict:
         "verification": {
             "verified_in_dataset": verified_in_dataset,
             "unverified_excluded": unverified_excluded,
+            "website_unreachable_excluded": website_unreachable_excluded,
         },
         "deduplication": {
             "input_companies": dedupe_report.input_count,

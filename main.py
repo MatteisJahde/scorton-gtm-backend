@@ -142,6 +142,10 @@ from services.url_utils import (
 )
 from services.contact_fields import attach_contact_aliases
 from services.lead_parity import verify_lead_count_parity
+from services.website_maintenance import (
+    partition_companies_by_website,
+    reverify_and_prune_database_leads,
+)
 from services.zerobounce_async import (
     ZEROBOUNCE_RATE_LIMIT_DELAY_SECONDS,
     apply_zerobounce_to_extras,
@@ -282,6 +286,18 @@ def _persist_companies_to_database(
         db.commit()
 
         processed_count = len(companies)
+        log_startup_step("website", f"HEAD-checking {processed_count} company websites")
+        website_partition = partition_companies_by_website(companies)
+        companies = website_partition["reachable"]
+        log_startup_step(
+            "website",
+            (
+                f"reachable={website_partition['summary']['reachable']} "
+                f"unreachable={website_partition['summary']['unreachable']}"
+            ),
+        )
+
+        processed_count = len(companies)
         log_startup_step("database", f"ingesting {processed_count} companies")
         ingest_result = ingest_companies(db, companies=companies)
         if ingest_result.get("error"):
@@ -313,6 +329,8 @@ def _persist_companies_to_database(
 
         log_startup_step("database", "building target dataset")
         build_result = build_target_dataset(db)
+        log_startup_step("website", "re-verifying existing dashboard websites")
+        website_refresh = reverify_and_prune_database_leads(db)
         verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
         print(
             f"[database] Lead verification — Verified: {verification.get('verified', 0)} | "
@@ -324,6 +342,8 @@ def _persist_companies_to_database(
                 "startup_ingest": ingest_result,
                 "startup_build_target_dataset": build_result,
                 "lead_parity": parity,
+                "website_validation": website_partition.get("summary"),
+                "website_refresh": website_refresh,
             },
             flush=True,
         )
@@ -628,8 +648,12 @@ def _enrich_lead_score_fields(lead: dict) -> dict:
     enriched["company_website"] = website
     domain = _lead_domain(enriched)
     enriched["domain"] = domain
-    enriched["website_status"] = website_display_status(website)
-    enriched["website_link"] = website if enriched["website_status"] == "ready" else ""
+    if enriched.get("website_reachable") is False:
+        enriched["website_status"] = "unavailable"
+        enriched["website_link"] = ""
+    else:
+        enriched["website_status"] = website_display_status(website)
+        enriched["website_link"] = website if enriched["website_status"] == "ready" else ""
     return attach_contact_aliases(enriched)
 
 
@@ -796,9 +820,11 @@ def _serialize_lead_records(df: pd.DataFrame) -> list[dict]:
 
 
 def _filter_allowed_leads(leads: list[dict]) -> list[dict]:
-    """Exclude non-target cities and non-financial / blocklisted companies."""
+    """Exclude invalid cities, blocklisted companies, and unreachable websites."""
     filtered: list[dict] = []
     for lead in leads:
+        if lead.get("website_reachable") is False:
+            continue
         city = _raw_lead_city(lead)
         if city and city not in ORIGINAL_TARGET_CITIES:
             continue
@@ -836,6 +862,13 @@ def _load_leads_from_db(db: Session) -> list[dict]:
             continue
         lead = target_account_to_dict(account)
         lead["city"] = city
+        lead["website_reachable"] = company.website_reachable
+        lead["website_http_status"] = company.website_http_status
+        lead["website_checked_at"] = (
+            company.website_checked_at.isoformat() if company.website_checked_at else None
+        )
+        if company.website_reachable is False:
+            continue
         if city:
             lead["locality"] = city
         leads.append(lead)
@@ -1036,6 +1069,7 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
     verification = (ingest_result.get("csv_validation") or {}).get("verification") or {}
     dataset_verification = {}
     build_result = build_target_dataset(db)
+    website_refresh = reverify_and_prune_database_leads(db)
     dataset_verification = build_result.get("verification") or {}
 
     verified_count = verification.get("verified", 0)
@@ -1059,6 +1093,7 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
         "csv_rows": len(get_companies()),
         "ingest": ingest_result,
         "build_target_dataset": build_result,
+        "website_refresh": website_refresh,
         "verification_summary": {
             "csv_verified": verified_count,
             "csv_unverified": unverified_count,
@@ -1070,6 +1105,16 @@ def api_reload_from_csv(db: Session = Depends(get_db)):
             ),
         },
     }
+
+
+@api_router.post("/reverify-websites")
+def api_reverify_websites(db: Session = Depends(get_db)):
+    """Re-check stored lead websites and remove unreachable companies from the dashboard."""
+    result = reverify_and_prune_database_leads(db)
+    return json_success(
+        result,
+        meta={"message": "Website re-verification complete"},
+    )
 
 
 @api_router.post("/verify-leads-csv")

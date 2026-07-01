@@ -5,17 +5,20 @@ from __future__ import annotations
 import csv
 import io
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 import requests
 
-REQUEST_TIMEOUT_SECONDS = 5
+from settings import WEBSITE_VERIFY_MAX_WORKERS, WEBSITE_VERIFY_TIMEOUT_SECONDS
+
+REQUEST_TIMEOUT_SECONDS = WEBSITE_VERIFY_TIMEOUT_SECONDS
 USER_AGENT = "ScortonGTMLeadBot/1.0"
-DEFAULT_MAX_WORKERS = 10
+DEFAULT_MAX_WORKERS = WEBSITE_VERIFY_MAX_WORKERS
 
 STATUS_VALID = "VALID"
 STATUS_DEAD = "DEAD"
+STATUS_UNREACHABLE = "UNREACHABLE"
 
 
 def normalize_website(raw: str) -> str:
@@ -30,6 +33,39 @@ def normalize_website(raw: str) -> str:
 def website_has_valid_format(website: str) -> bool:
     parsed = urlparse(normalize_website(website))
     return bool(parsed.netloc and "." in parsed.netloc)
+
+
+def check_website_head_status_200(website: str) -> tuple[bool, str, Optional[int]]:
+    """
+    Strict ingestion check: issue a HEAD request and accept only HTTP 200.
+
+    Returns (is_reachable, detail, status_code).
+    """
+    if not website_has_valid_format(website):
+        return False, "invalid_url", None
+
+    url = normalize_website(website)
+    headers = {"User-Agent": USER_AGENT}
+    session = requests.Session()
+    session.trust_env = False
+
+    try:
+        response = session.head(
+            url,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+            allow_redirects=True,
+            headers=headers,
+        )
+        status_code = int(response.status_code)
+        if status_code == 200:
+            return True, "head_200", status_code
+        return False, f"head_{status_code}", status_code
+    except requests.Timeout:
+        return False, "timeout", None
+    except requests.RequestException as exc:
+        return False, type(exc).__name__, None
+    finally:
+        session.close()
 
 
 def check_website_active(website: str) -> tuple[bool, str]:

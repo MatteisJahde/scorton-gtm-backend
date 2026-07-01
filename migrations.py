@@ -51,6 +51,13 @@ def migrate_db() -> None:
             ]
             for column_name, column_type in company_migrations:
                 _add_column(conn, "companies", column_name, column_type)
+            website_migrations = [
+                ("website_reachable", "BOOLEAN DEFAULT 1"),
+                ("website_http_status", "INTEGER"),
+                ("website_checked_at", "DATETIME"),
+            ]
+            for column_name, column_type in website_migrations:
+                _add_column(conn, "companies", column_name, column_type)
 
     if "target_accounts" in table_names:
         migrations = [

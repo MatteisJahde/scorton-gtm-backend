@@ -36,6 +36,8 @@ CONTACT_ENRICHMENT_DROP_IF_MISSING = os.getenv(
 ).strip().lower() in {"1", "true", "yes"}
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY") or os.getenv("HUNTER_IO_API_KEY")
 PDL_API_KEY = os.getenv("PDL_API_KEY")
+WEBSITE_VERIFY_TIMEOUT_SECONDS = int(os.getenv("WEBSITE_VERIFY_TIMEOUT_SECONDS", "5"))
+WEBSITE_VERIFY_MAX_WORKERS = int(os.getenv("WEBSITE_VERIFY_MAX_WORKERS", "10"))
 CORS_ORIGIN_REGEX = os.getenv(
     "CORS_ORIGIN_REGEX",
     r"https://([a-zA-Z0-9-]+\.)*lovable\.app",

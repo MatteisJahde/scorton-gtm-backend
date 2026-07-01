@@ -29,6 +29,9 @@ class Company(Base):
     employee_count = Column(Integer, nullable=True)
     score = Column(Integer, default=0)
     priority_tier = Column(String, default="low")
+    website_reachable = Column(Boolean, default=True, index=True)
+    website_http_status = Column(Integer, nullable=True)
+    website_checked_at = Column(DateTime, nullable=True)
 
     contacts = relationship("Contact", back_populates="company")
 
